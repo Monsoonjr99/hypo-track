@@ -1,0 +1,27 @@
+body{
+	margin: 0px;
+	padding: 0px;
+	background: #BBB;
+	background: -o-linear-gradient(#BBB,#F3F3F3);
+	background: -webkit-linear-gradient(#BBB,#F3F3F3);
+	background: -moz-linear-gradient(#BBB,#F3F3F3);
+	background: linear-gradient(#BBB,#F3F3F3);
+	font-family: Calibri, Arial;
+	text-align: center;
+}
+
+a{
+	text-decoration: none;
+	color: blue;
+	position: relative;
+	transition: font-size .5s;
+}
+
+a:hover{
+	color: black;
+	font-size: 130%;
+}
+
+ul{
+	list-style: none;
+}
