@@ -11,15 +11,26 @@ body{
 }
 
 a{
+	display: inline-block;
 	text-decoration: none;
 	color: blue;
-	position: relative;
-	transition: font-size .5s;
+}
+
+a:after{
+	display: block;
+	content: '';
+	border-bottom: solid 1px black;
+	transform: scaleX(0);
+	transition: transform 300ms;
 }
 
 a:hover{
 	color: black;
-	font-size: 130%;
+	transform-origin: 50% 50%;
+}
+
+a:hover:after{
+	transform: scaleX(1);
 }
 
 ul{
