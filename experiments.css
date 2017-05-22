@@ -16,6 +16,14 @@ a{
 	color: blue;
 }
 
+a.version{
+	position: fixed;
+	bottom: 0px;
+	right: 0px;
+	color: #777;
+	padding: 10px;
+}
+
 a:after{
 	display: block;
 	content: '';
