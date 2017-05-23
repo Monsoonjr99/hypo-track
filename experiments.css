@@ -1,13 +1,10 @@
 body{
-	margin: 0px;
-	padding: 0px;
 	background: #BBB;
 	background: -o-linear-gradient(#BBB,#F3F3F3);
 	background: -webkit-linear-gradient(#BBB,#F3F3F3);
 	background: -moz-linear-gradient(#BBB,#F3F3F3);
 	background: linear-gradient(#BBB,#F3F3F3);
 	font-family: Calibri, Arial;
-	text-align: center;
 }
 
 a{
@@ -16,12 +13,13 @@ a{
 	color: blue;
 }
 
-a.version{
+#version{
 	position: fixed;
 	bottom: 0px;
 	right: 0px;
 	color: #777;
 	padding: 10px;
+	z-index: 100;
 }
 
 a:after{
@@ -32,7 +30,7 @@ a:after{
 	transition: transform 300ms;
 }
 
-a:hover{
+a:hover, a#version:hover{
 	color: black;
 	transform-origin: 50% 50%;
 }
@@ -43,4 +41,5 @@ a:hover:after{
 
 ul{
 	list-style: none;
+	text-align: center;
 }
