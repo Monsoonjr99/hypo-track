@@ -20,6 +20,10 @@ a{
 	color: #777;
 	padding: 10px;
 	z-index: 100;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
 }
 
 a:after{
