@@ -1,0 +1,4 @@
+About: A tool for making hypothetical tropical cyclone tracks (WIP)
+
+v20200405a:
+    + Added pannable and zoomable map
