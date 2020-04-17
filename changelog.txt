@@ -1,4 +1,11 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20200417a:
+    + Added the ability to place, move, and delete track points
+        > Press "d", "s", "1", "2", "3", "4", or "5" to select track point color
+        > Click anywhere to place a new track point
+        > Click and drag an existing point to move it
+        > Shift-click a point to delete it
+        > Currently only supports a single storm's track
 v20200405a:
     + Added pannable and zoomable map
