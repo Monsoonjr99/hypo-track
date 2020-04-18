@@ -1,5 +1,14 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20200418a:
+    + Support for multiple tracks added
+        > Control-click to begin a new track
+        > New points added to the end of the selected track
+        > Move or delete a point from a track to select it
+    + Subtropical and extratropical points added
+        > Press "t" to select tropical (circle) for new points
+        > Press "b" to select subtropical (square)
+        > Press "x" to select extratropical (triangle)
 v20200417a:
     + Added the ability to place, move, and delete track points
         > Press "d", "s", "1", "2", "3", "4", or "5" to select track point color

@@ -1,5 +1,5 @@
 const TITLE = 'Hypo TC Track Maker';
-const VERSION = '20200417a';
+const VERSION = '20200418a';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -16,9 +16,11 @@ var loadedMapImg,
     beginPanX,
     beginPanY,
     mouseMode,
-    dots,
+    tracks,
     categoryToPlace,
-    selectedDot;
+    typeToPlace,
+    selectedDot,
+    selectedTrack;
 
 function setup(){
     setVersion(TITLE + ' v',VERSION);
@@ -29,8 +31,9 @@ function setup(){
     zoomAmt = 0;
     panLocation = createVector(0);
     loadedMapImg = false;
-    dots = [];
+    tracks = [];
     categoryToPlace = 0;
+    typeToPlace = 0;
 
     mapImg = createGraphics(MAP_WIDTH,MAP_HEIGHT);
     
@@ -60,23 +63,37 @@ function draw(){
     {
         image(mapImg,0,HEIGHT-WIDTH/2,WIDTH,WIDTH/2,panLocation.x,panLocation.y,mapViewWidth(),mapViewHeight());
         let dotSize = 2*pow(1.25,zoomAmt);
-        for(let i=0;i<dots.length;i++){
-            let d = dots[i];
-            let coords = longLatToScreenCoords(d);
-            if(i<dots.length-1){
-                d1 = dots[i+1];
-                coords1 = longLatToScreenCoords(d1);
-                if(coords.inBounds || coords1.inBounds){
-                    noFill();
-                    stroke('#ffffff');
-                    strokeWeight(dotSize/5);
-                    line(coords.x,coords.y,coords1.x,coords1.y);
+        for(let i=0;i<tracks.length;i++){
+            for(let j=0;j<tracks[i].length;j++){
+                let d = tracks[i][j];
+                let coords = longLatToScreenCoords(d);
+                if(j<tracks[i].length-1){
+                    d1 = tracks[i][j+1];
+                    coords1 = longLatToScreenCoords(d1);
+                    if(coords.inBounds || coords1.inBounds){
+                        noFill();
+                        stroke('#ffffff');
+                        strokeWeight(dotSize/5);
+                        line(coords.x,coords.y,coords1.x,coords1.y);
+                    }
                 }
-            }
-            if(coords.inBounds){
-                fill(COLORS[d.cat]);
-                noStroke();
-                ellipse(coords.x,coords.y,dotSize,dotSize);
+                if(coords.inBounds){
+                    fill(COLORS[d.cat]);
+                    noStroke();
+                    if(d.type === 0)
+                        ellipse(coords.x,coords.y,dotSize,dotSize);
+                    else if(d.type === 1)
+                        rect(coords.x-dotSize/2,coords.y-dotSize/2,dotSize,dotSize);
+                    else if(d.type === 2)
+                        triangle(
+                            coords.x+dotSize/2*cos(PI/6),
+                            coords.y+dotSize/2*sin(PI/6),
+                            coords.x+dotSize/2*cos(5*PI/6),
+                            coords.y+dotSize/2*sin(5*PI/6),
+                            coords.x+dotSize/2*cos(3*PI/2),
+                            coords.y+dotSize/2*sin(3*PI/2)
+                            );
+                }
             }
         }
         fill(255);
@@ -84,10 +101,14 @@ function draw(){
         rect(0,0,WIDTH,HEIGHT-WIDTH/2);
         fill(0);
         textAlign(CENTER,CENTER);
+        textSize(12);
         text('TEST',WIDTH/2,(HEIGHT-WIDTH/2)/2);
     }
-    else
-        text('Loading...', 30,30);
+    else{
+        textSize(48);
+        textAlign(CENTER,CENTER);
+        text('Loading...', WIDTH/2,HEIGHT/2);
+    }
 }
 
 function mouseWheel(evt){
@@ -126,13 +147,16 @@ function mousePressed(){
             mouseMode = 3;
         }else{
             mouseMode = 0;
-            for(let i=dots.length-1;i>=0;i--){
-                let d = dots[i];
-                let c = longLatToScreenCoords(d);
-                if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
-                    selectedDot = d;
-                    mouseMode = 2;
-                    break;
+            for(let i=tracks.length-1;i>=0;i--){
+                for(let j=tracks[i].length-1;j>=0;j--){
+                    let d = tracks[i][j];
+                    let c = longLatToScreenCoords(d);
+                    if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
+                        selectedDot = d;
+                        selectedTrack = tracks[i];
+                        mouseMode = 2;
+                        return;
+                    }
                 }
             }
         }
@@ -142,17 +166,32 @@ function mousePressed(){
 function mouseReleased(){
     if(mouseButton === LEFT){
         if(mouseMode === 0){
-            dots.push(new Dot(mouseLong(),mouseLat(),categoryToPlace));
+            if(keyIsDown(CONTROL))
+                selectedTrack = undefined;
+            if(!selectedTrack){
+                selectedTrack = [];
+                tracks.push(selectedTrack);
+            }
+            selectedTrack.push(new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace));
         }else if(mouseMode === 2){
             selectedDot.long = mouseLong();
             selectedDot.lat = mouseLat();
         }else if(mouseMode === 3){
-            for(let i=dots.length-1;i>=0;i--){
-                let d = dots[i];
-                let c = longLatToScreenCoords(d);
-                if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
-                    dots.splice(i,1);
-                    break;
+            for(let i=tracks.length-1, done = false; i>=0 && !done; i--){
+                for(let j=tracks[i].length-1;j>=0 && !done;j--){
+                    let d = tracks[i][j];
+                    let c = longLatToScreenCoords(d);
+                    if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
+                        tracks[i].splice(j,1);
+                        if(tracks[i].length===0){
+                            if(selectedTrack === tracks[i])
+                                selectedTrack = undefined;
+                            tracks.splice(i,1);
+                        }
+                        else
+                            selectedTrack = tracks[i];
+                        done = true;
+                    }
                 }
             }
         }
@@ -209,6 +248,12 @@ function keyTyped(){
         categoryToPlace = 5;
     else if(key === '5')
         categoryToPlace = 6;
+    else if(key === 't')
+        typeToPlace = 0;
+    else if(key === 'b')
+        typeToPlace = 1;
+    else if(key === 'x')
+        typeToPlace = 2;
     else return;
     return false;
 }
@@ -234,7 +279,7 @@ function mouseLat(){
 }
 
 function longLatToScreenCoords(long,lat){
-    if(long instanceof Dot){
+    if(long instanceof TrackPoint){
         lat = long.lat;
         long = long.long;
     }
@@ -252,10 +297,11 @@ function loadImg(path){     // wrap p5.loadImage in a promise
     });
 }
 
-class Dot{
-    constructor(long,lat,cat){
+class TrackPoint{
+    constructor(long,lat,cat,type){
         this.long = long || 0;
         this.lat = lat || 0;
         this.cat = cat || 0;
+        this.type = type || 0;
     }
 }
