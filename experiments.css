@@ -4,7 +4,7 @@ body{
 	background: -webkit-linear-gradient(#BBB,#F3F3F3);
 	background: -moz-linear-gradient(#BBB,#F3F3F3);
 	background: linear-gradient(#BBB,#F3F3F3);
-	font-family: Calibri, Arial;
+	font-family: Verdana, Arial, Calibri;
 }
 
 a{
