@@ -1,5 +1,8 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20210111a:
+    * Map can now be panned beyond the International Date Line (allowing for crossover tracks)
+    * Better map resolution when fully zoomed in
 v20200418a:
     + Support for multiple tracks added
         > Control-click to begin a new track
