@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20210111a';
+    const VERSION = '20220130a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;

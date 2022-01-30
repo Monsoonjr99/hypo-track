@@ -1,5 +1,15 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220130a:
+    + Added mode for viewing a single track
+        > Press "h" with a track selected to enter this mode and hide all other tracks
+        > Disabled by pressing "h" again or by deselecting track
+    * Selected track and hovered tracks now highlighted
+        > Highlight disabled in single track view mode
+    * Tracks can now be deselected by pressing space
+        > New tracks now created by clicking anywhere without any tracks selected
+        > Control-click no longer does anything special
+    - Removed white bar with "TEST" from the map viewer
 v20210111a:
     * Map can now be panned beyond the International Date Line (allowing for crossover tracks)
     * Better map resolution when fully zoomed in
