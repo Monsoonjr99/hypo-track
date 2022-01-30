@@ -2,8 +2,8 @@ var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
     const VERSION = '20210111a';
 
-    const WIDTH = 960;
-    const HEIGHT = 540;
+    const WIDTH = 1000;
+    const HEIGHT = 500;
     const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060'];
 
     let loadedMapImg,
@@ -18,8 +18,11 @@ var TrackMaker = (function(){
         tracks,
         categoryToPlace,
         typeToPlace,
+        hoverDot,
+        hoverTrack,
         selectedDot,
-        selectedTrack;
+        selectedTrack,
+        hideNonSelectedTracks;
 
     // container for functions to be made global for p5.js
     let _p5 = {};
@@ -65,46 +68,73 @@ var TrackMaker = (function(){
             // image(mapImg,0,HEIGHT-WIDTH/2,WIDTH,WIDTH/2,panLocation.x,panLocation.y,mapViewWidth(),mapViewHeight());
             drawMap();
             let dotSize = 2*pow(1.25,zoomAmt);
+            strokeWeight(dotSize/5);
             for(let i=0;i<tracks.length;i++){
-                for(let j=0;j<tracks[i].length;j++){
-                    let d = tracks[i][j];
-                    let coords = longLatToScreenCoords(d);
-                    if(j<tracks[i].length-1){
-                        d1 = tracks[i][j+1];
-                        coords1 = longLatToScreenCoords(d1);
-                        if(coords.inBounds || coords1.inBounds){
-                            noFill();
-                            stroke('#ffffff');
-                            strokeWeight(dotSize/5);
-                            line(coords.x,coords.y,coords1.x,coords1.y);
+                if(!hideNonSelectedTracks || selectedTrack === tracks[i]){
+                    for(let j=0;j<tracks[i].length;j++){
+                        let d = tracks[i][j];
+                        let coords = longLatToScreenCoords(d);
+                        if(j<tracks[i].length-1){
+                            d1 = tracks[i][j+1];
+                            coords1 = longLatToScreenCoords(d1);
+                            if(coords.inBounds || coords1.inBounds){
+                                noFill();
+                                if(selectedTrack === tracks[i] && !hideNonSelectedTracks)
+                                    stroke('#ffff00');
+                                else
+                                    stroke('#ffffff');
+                                line(coords.x,coords.y,coords1.x,coords1.y);
+                            }
                         }
-                    }
-                    if(coords.inBounds){
-                        fill(COLORS[d.cat]);
-                        noStroke();
-                        if(d.type === 0)
-                            ellipse(coords.x,coords.y,dotSize,dotSize);
-                        else if(d.type === 1)
-                            rect(coords.x-dotSize/2,coords.y-dotSize/2,dotSize,dotSize);
-                        else if(d.type === 2)
-                            triangle(
-                                coords.x+dotSize/2*cos(PI/6),
-                                coords.y+dotSize/2*sin(PI/6),
-                                coords.x+dotSize/2*cos(5*PI/6),
-                                coords.y+dotSize/2*sin(5*PI/6),
-                                coords.x+dotSize/2*cos(3*PI/2),
-                                coords.y+dotSize/2*sin(3*PI/2)
-                                );
+                        if(coords.inBounds){
+                            fill(COLORS[d.cat]);
+                            if(hideNonSelectedTracks)
+                                noStroke();
+                            else if(selectedTrack === tracks[i])
+                                stroke('#ffff00');
+                            else if(hoverTrack === tracks[i])
+                                stroke('#ffffff');
+                            else
+                                noStroke();
+                            if(d.type === 0)
+                                ellipse(coords.x,coords.y,dotSize,dotSize);
+                            else if(d.type === 1)
+                                rect(coords.x-dotSize/2,coords.y-dotSize/2,dotSize,dotSize);
+                            else if(d.type === 2)
+                                triangle(
+                                    coords.x+dotSize/2*cos(PI/6),
+                                    coords.y+dotSize/2*sin(PI/6),
+                                    coords.x+dotSize/2*cos(5*PI/6),
+                                    coords.y+dotSize/2*sin(5*PI/6),
+                                    coords.x+dotSize/2*cos(3*PI/2),
+                                    coords.y+dotSize/2*sin(3*PI/2)
+                                    );
+                        }
                     }
                 }
             }
-            fill(255);
-            noStroke();
-            rect(0,0,WIDTH,HEIGHT-WIDTH/2);
-            fill(0);
-            textAlign(CENTER,CENTER);
-            textSize(12);
-            text('TEST',WIDTH/2,(HEIGHT-WIDTH/2)/2);
+            hoverTrack = undefined;
+            hoverDot = undefined;
+            for(let i=tracks.length-1;i>=0;i--){
+                if(!hideNonSelectedTracks || selectedTrack === tracks[i]){
+                    for(let j=tracks[i].length-1;j>=0;j--){
+                        let d = tracks[i][j];
+                        let c = longLatToScreenCoords(d);
+                        if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
+                            hoverDot = d;
+                            hoverTrack = tracks[i];
+                            return;
+                        }
+                    }
+                }
+            }
+            // fill(255);
+            // noStroke();
+            // rect(0,0,WIDTH,HEIGHT-WIDTH/2);
+            // fill(0);
+            // textAlign(CENTER,CENTER);
+            // textSize(12);
+            // text('TEST',WIDTH/2,(HEIGHT-WIDTH/2)/2);
         }
         else{
             textSize(48);
@@ -197,18 +227,22 @@ var TrackMaker = (function(){
                 mouseMode = 3;
             }else{
                 mouseMode = 0;
-                for(let i=tracks.length-1;i>=0;i--){
-                    for(let j=tracks[i].length-1;j>=0;j--){
-                        let d = tracks[i][j];
-                        let c = longLatToScreenCoords(d);
-                        if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
-                            selectedDot = d;
-                            selectedTrack = tracks[i];
-                            mouseMode = 2;
-                            return;
-                        }
-                    }
+                if(hoverTrack === selectedTrack && hoverDot){
+                    selectedDot = hoverDot;
+                    mouseMode = 2;
                 }
+                // for(let i=tracks.length-1;i>=0;i--){
+                //     for(let j=tracks[i].length-1;j>=0;j--){
+                //         let d = tracks[i][j];
+                //         let c = longLatToScreenCoords(d);
+                //         if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
+                //             selectedDot = d;
+                //             selectedTrack = tracks[i];
+                //             mouseMode = 2;
+                //             return;
+                //         }
+                //     }
+                // }
             }
         }
     };
@@ -216,13 +250,17 @@ var TrackMaker = (function(){
     _p5.mouseReleased = function(){
         if(mouseButton === LEFT){
             if(mouseMode === 0){
-                if(keyIsDown(CONTROL))
-                    selectedTrack = undefined;
-                if(!selectedTrack){
-                    selectedTrack = [];
-                    tracks.push(selectedTrack);
+                // if(keyIsDown(CONTROL))
+                //     selectedTrack = undefined;
+                if(hoverTrack)
+                    selectedTrack = hoverTrack;
+                else{
+                    if(!selectedTrack){
+                        selectedTrack = [];
+                        tracks.push(selectedTrack);
+                    }
+                    selectedTrack.push(new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace));
                 }
-                selectedTrack.push(new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace));
             }else if(mouseMode === 2){
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
@@ -257,7 +295,7 @@ var TrackMaker = (function(){
             if(mouseMode === 2 && selectedDot){
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
-            }else{
+            }else if(mouseMode === 1 || Math.hypot(mouseX - beginClickX, mouseY - beginClickY) >= 20){
                 mouseMode = 1;
                 let mvw = mapViewWidth();
                 let mvh = mapViewHeight();
@@ -304,7 +342,14 @@ var TrackMaker = (function(){
             typeToPlace = 1;
         else if(key === 'x')
             typeToPlace = 2;
-        else return;
+        else if(key === ' '){
+            selectedTrack = undefined;
+            if(hideNonSelectedTracks)
+                hideNonSelectedTracks = false;
+        }else if(key === 'h'){
+            if(selectedTrack)
+                hideNonSelectedTracks = !hideNonSelectedTracks;
+        }else return;
         return false;
     };
 
