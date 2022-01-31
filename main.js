@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220130a';
+    const VERSION = '20220131a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -99,7 +99,7 @@ var TrackMaker = (function(){
                             if(d.type === 0)
                                 ellipse(coords.x,coords.y,dotSize,dotSize);
                             else if(d.type === 1)
-                                rect(coords.x-dotSize/2.8,coords.y-dotSize/2.8,dotSize*0.7,dotSize*0.7);
+                                rect(coords.x-dotSize*0.35,coords.y-dotSize*0.35,dotSize*0.7,dotSize*0.7);
                             else if(d.type === 2)
                                 triangle(
                                     coords.x+dotSize/2.2*cos(PI/6),
