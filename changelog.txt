@@ -1,5 +1,10 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220131a:
+    + Added grey color for unknown strength cyclones
+        > Press "u" to select
+    * Better sizes for subtropical squares, extratropical triangles, and track line
+    % Credit to Reno-Rex (a.k.a. Hypercane) for this update
 v20220130a:
     + Added mode for viewing a single track
         > Press "h" with a track selected to enter this mode and hide all other tracks
