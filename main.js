@@ -4,7 +4,7 @@ var TrackMaker = (function(){
 
     const WIDTH = 1000;
     const HEIGHT = 500;
-    const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060'];
+    const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
 
     let loadedMapImg,
         mapImgs,
@@ -68,7 +68,7 @@ var TrackMaker = (function(){
             // image(mapImg,0,HEIGHT-WIDTH/2,WIDTH,WIDTH/2,panLocation.x,panLocation.y,mapViewWidth(),mapViewHeight());
             drawMap();
             let dotSize = 2*pow(1.25,zoomAmt);
-            strokeWeight(dotSize/5);
+            strokeWeight(dotSize/9);
             for(let i=0;i<tracks.length;i++){
                 if(!hideNonSelectedTracks || selectedTrack === tracks[i]){
                     for(let j=0;j<tracks[i].length;j++){
@@ -99,15 +99,15 @@ var TrackMaker = (function(){
                             if(d.type === 0)
                                 ellipse(coords.x,coords.y,dotSize,dotSize);
                             else if(d.type === 1)
-                                rect(coords.x-dotSize/2,coords.y-dotSize/2,dotSize,dotSize);
+                                rect(coords.x-dotSize/2.8,coords.y-dotSize/2.8,dotSize*0.7,dotSize*0.7);
                             else if(d.type === 2)
                                 triangle(
-                                    coords.x+dotSize/2*cos(PI/6),
-                                    coords.y+dotSize/2*sin(PI/6),
-                                    coords.x+dotSize/2*cos(5*PI/6),
-                                    coords.y+dotSize/2*sin(5*PI/6),
-                                    coords.x+dotSize/2*cos(3*PI/2),
-                                    coords.y+dotSize/2*sin(3*PI/2)
+                                    coords.x+dotSize/2.2*cos(PI/6),
+                                    coords.y+dotSize/2.2*sin(PI/6),
+                                    coords.x+dotSize/2.2*cos(5*PI/6),
+                                    coords.y+dotSize/2.2*sin(5*PI/6),
+                                    coords.x+dotSize/2.2*cos(3*PI/2),
+                                    coords.y+dotSize/2.2*sin(3*PI/2)
                                     );
                         }
                     }
@@ -336,6 +336,8 @@ var TrackMaker = (function(){
             categoryToPlace = 5;
         else if(key === '5')
             categoryToPlace = 6;
+        else if(key === 'u')
+            categoryToPlace = 7;
         else if(key === 't')
             typeToPlace = 0;
         else if(key === 'b')
