@@ -1,5 +1,8 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220205b:
+    * Fixed placement of "Select Category" dropdown
+    * Dropdowns now display correct value after using keyboard shortcuts
 v20220205a:
     + Added GUI
         > for changing category
