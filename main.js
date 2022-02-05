@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220205a';
+    const VERSION = '20220205b';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -321,40 +321,6 @@ var TrackMaker = (function(){
         }
     };
 
-    _p5.keyTyped = function(){
-        if(key === 'd')
-            categoryToPlace = 0;
-        else if(key === 's')
-            categoryToPlace = 1;
-        else if(key === '1')
-            categoryToPlace = 2;
-        else if(key === '2')
-            categoryToPlace = 3;
-        else if(key === '3')
-            categoryToPlace = 4;
-        else if(key === '4')
-            categoryToPlace = 5;
-        else if(key === '5')
-            categoryToPlace = 6;
-        else if(key === 'u')
-            categoryToPlace = 7;
-        else if(key === 't')
-            typeToPlace = 0;
-        else if(key === 'b')
-            typeToPlace = 1;
-        else if(key === 'x')
-            typeToPlace = 2;
-        else if(key === ' '){
-            selectedTrack = undefined;
-            if(hideNonSelectedTracks)
-                hideNonSelectedTracks = false;
-        }else if(key === 'h'){
-            if(selectedTrack)
-                hideNonSelectedTracks = !hideNonSelectedTracks;
-        }else return;
-        return false;
-    };
-
     function zoomMult(){
         return pow(1.25, zoomAmt);
     }
@@ -401,20 +367,24 @@ var TrackMaker = (function(){
         }
     }
 
-    Object.assign(window, _p5);
-
     // GUI
 
+    let categorySelect,
+        typeSelect;
+
     window.onload = function(){
+        let dropdowns = document.createElement('div');
+        document.body.appendChild(dropdowns);
+
         function dropdown(label, data){
             let drop = document.createElement('select');
             drop.style.marginTop = '1em';
             drop.style.marginLeft = '1em';
             let l = document.createElement('span');
             l.innerText = label;
-            document.body.appendChild(l);
-            document.body.appendChild(drop);
-            document.body.appendChild(document.createElement('br'));
+            dropdowns.appendChild(l);
+            dropdowns.appendChild(drop);
+            dropdowns.appendChild(document.createElement('br'));
     
             for(let key in data){
                 let o = document.createElement('option');
@@ -479,6 +449,53 @@ var TrackMaker = (function(){
                 hideNonSelectedTracks = !hideNonSelectedTracks;
         };
     };
+
+    _p5.keyTyped = function(){
+        if(key === 'd'){
+            categorySelect.value = 'Depression';
+            categoryToPlace = 0;
+        }else if(key === 's'){
+            categorySelect.value = 'Storm';
+            categoryToPlace = 1;
+        }else if(key === '1'){
+            categorySelect.value = 'Category 1';
+            categoryToPlace = 2;
+        }else if(key === '2'){
+            categorySelect.value = 'Category 2';
+            categoryToPlace = 3;
+        }else if(key === '3'){
+            categorySelect.value = 'Category 3';
+            categoryToPlace = 4;
+        }else if(key === '4'){
+            categorySelect.value = 'Category 4';
+            categoryToPlace = 5;
+        }else if(key === '5'){
+            categorySelect.value = 'Category 5';
+            categoryToPlace = 6;
+        }else if(key === 'u'){
+            categorySelect.value = 'Unknown';
+            categoryToPlace = 7;
+        }else if(key === 't'){
+            typeSelect.value = 'Tropical';
+            typeToPlace = 0;
+        }else if(key === 'b'){
+            typeSelect.value = 'Subtropical';
+            typeToPlace = 1;
+        }else if(key === 'x'){
+            typeSelect.value = 'Non-Tropical';
+            typeToPlace = 2;
+        }else if(key === ' '){
+            selectedTrack = undefined;
+            if(hideNonSelectedTracks)
+                hideNonSelectedTracks = false;
+        }else if(key === 'h'){
+            if(selectedTrack)
+                hideNonSelectedTracks = !hideNonSelectedTracks;
+        }else return;
+        return false;
+    };
+
+    Object.assign(window, _p5);
 
     return {
         tracks: function(){
