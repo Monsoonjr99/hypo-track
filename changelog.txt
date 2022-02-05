@@ -1,5 +1,11 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220205a:
+    + Added GUI
+        > for changing category
+        > for changing dot type
+        > for deselecting tracks
+        > for single track mode
 v20220131a:
     + Added grey color for unknown strength cyclones
         > Press "u" to select

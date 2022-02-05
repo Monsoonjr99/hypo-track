@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220131a';
+    const VERSION = '20220205a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -220,7 +220,7 @@ var TrackMaker = (function(){
     };
 
     _p5.mousePressed = function(){
-        if(mouseButton === LEFT){
+        if(mouseButton === LEFT && mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT-WIDTH/2) && mouseY < HEIGHT && loadedMapImg){
             beginClickX = mouseX;
             beginClickY = mouseY;
             if(keyIsDown(SHIFT)){
@@ -248,7 +248,7 @@ var TrackMaker = (function(){
     };
 
     _p5.mouseReleased = function(){
-        if(mouseButton === LEFT){
+        if(mouseButton === LEFT && beginClickX && beginClickY){
             if(mouseMode === 0){
                 // if(keyIsDown(CONTROL))
                 //     selectedTrack = undefined;
@@ -291,7 +291,7 @@ var TrackMaker = (function(){
     };
 
     _p5.mouseDragged = function(){
-        if(mouseButton === LEFT){
+        if(mouseButton === LEFT && beginClickX && beginClickY){
             if(mouseMode === 2 && selectedDot){
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
@@ -402,6 +402,83 @@ var TrackMaker = (function(){
     }
 
     Object.assign(window, _p5);
+
+    // GUI
+
+    window.onload = function(){
+        function dropdown(label, data){
+            let drop = document.createElement('select');
+            drop.style.marginTop = '1em';
+            drop.style.marginLeft = '1em';
+            let l = document.createElement('span');
+            l.innerText = label;
+            document.body.appendChild(l);
+            document.body.appendChild(drop);
+            document.body.appendChild(document.createElement('br'));
+    
+            for(let key in data){
+                let o = document.createElement('option');
+                o.value = key;
+                o.innerText = key;
+                drop.appendChild(o);
+            }
+
+            return drop;
+        }
+        
+        let categorySelectData = {
+            'Depression': 0,
+            'Storm': 1,
+            'Category 1': 2,
+            'Category 2': 3,
+            'Category 3': 4,
+            'Category 4': 5,
+            'Category 5': 6,
+            'Unknown': 7
+        };
+
+        categorySelect = dropdown('Select Category:', categorySelectData);
+        categorySelect.onchange = function(){
+            categoryToPlace = categorySelectData[categorySelect.value];
+        };
+
+        let typeSelectData = {
+            'Tropical': 0,
+            'Subtropical': 1,
+            'Non-Tropical': 2
+        };
+
+        typeSelect = dropdown('Select Type:', typeSelectData);
+        typeSelect.onchange = function(){
+            typeToPlace = typeSelectData[typeSelect.value];
+        };
+
+        let buttons = document.createElement('div');
+        buttons.style.marginTop = '1em';
+        document.body.appendChild(buttons);
+
+        function button(label){
+            let b = document.createElement('button');
+            b.innerText = label;
+            b.style.marginRight = '1em';
+            buttons.appendChild(b);
+            return b;
+        }
+
+        let deselectButton = button('Deselect Track');
+        deselectButton.onclick = function(){
+            selectedTrack = undefined;
+            selectedDot = undefined;
+            if(hideNonSelectedTracks)
+                hideNonSelectedTracks = false;
+        };
+
+        let singleTrackButton = button('Single Track Mode');
+        singleTrackButton.onclick = function(){
+            if(selectedTrack)
+                hideNonSelectedTracks = !hideNonSelectedTracks;
+        };
+    };
 
     return {
         tracks: function(){
