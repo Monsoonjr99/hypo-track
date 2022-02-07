@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220205b';
+    const VERSION = '20220207a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -22,7 +22,10 @@ var TrackMaker = (function(){
         hoverTrack,
         selectedDot,
         selectedTrack,
-        hideNonSelectedTracks;
+        hideNonSelectedTracks,
+        deleteTrackPoints;
+
+    let refreshGUI; // hoist function
 
     // container for functions to be made global for p5.js
     let _p5 = {};
@@ -223,7 +226,7 @@ var TrackMaker = (function(){
         if(mouseButton === LEFT && mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT-WIDTH/2) && mouseY < HEIGHT && loadedMapImg){
             beginClickX = mouseX;
             beginClickY = mouseY;
-            if(keyIsDown(SHIFT)){
+            if(deleteTrackPoints){
                 mouseMode = 3;
             }else{
                 mouseMode = 0;
@@ -283,6 +286,7 @@ var TrackMaker = (function(){
                     }
                 }
             }
+            refreshGUI();
             beginClickX = undefined;
             beginClickY = undefined;
             beginPanX = undefined;
@@ -318,6 +322,7 @@ var TrackMaker = (function(){
                 if(panLocation.lat - mvh < -90)
                     panLocation.lat = -90 + mvh;
             }
+            return false;
         }
     };
 
@@ -374,13 +379,14 @@ var TrackMaker = (function(){
 
     window.onload = function(){
         let dropdowns = document.createElement('div');
+        dropdowns.style.marginTop = '1em';
         document.body.appendChild(dropdowns);
 
-        function dropdown(label, data){
+        function dropdown(id, label, data){
             let drop = document.createElement('select');
-            drop.style.marginTop = '1em';
-            drop.style.marginLeft = '1em';
-            let l = document.createElement('span');
+            drop.id = id;
+            let l = document.createElement('label');
+            l.htmlFor = drop.id;
             l.innerText = label;
             dropdowns.appendChild(l);
             dropdowns.appendChild(drop);
@@ -407,7 +413,7 @@ var TrackMaker = (function(){
             'Unknown': 7
         };
 
-        categorySelect = dropdown('Select Category:', categorySelectData);
+        categorySelect = dropdown('category-select', 'Select Category:', categorySelectData);
         categorySelect.onchange = function(){
             categoryToPlace = categorySelectData[categorySelect.value];
         };
@@ -418,7 +424,7 @@ var TrackMaker = (function(){
             'Non-Tropical': 2
         };
 
-        typeSelect = dropdown('Select Type:', typeSelectData);
+        typeSelect = dropdown('type-select', 'Select Type:', typeSelectData);
         typeSelect.onchange = function(){
             typeToPlace = typeSelectData[typeSelect.value];
         };
@@ -432,6 +438,20 @@ var TrackMaker = (function(){
             b.innerText = label;
             b.style.marginRight = '1em';
             buttons.appendChild(b);
+            buttons.appendChild(document.createElement('br'));
+            return b;
+        }
+
+        function checkbox(id, label){
+            let b = document.createElement('input');
+            b.type = 'checkbox';
+            b.id = id;
+            let l = document.createElement('label');
+            l.htmlFor = b.id;
+            l.innerText = label;
+            buttons.appendChild(l);
+            buttons.appendChild(b);
+            buttons.appendChild(document.createElement('br'));
             return b;
         }
 
@@ -441,57 +461,71 @@ var TrackMaker = (function(){
             selectedDot = undefined;
             if(hideNonSelectedTracks)
                 hideNonSelectedTracks = false;
+            refreshGUI();
         };
 
-        let singleTrackButton = button('Single Track Mode');
-        singleTrackButton.onclick = function(){
+        let singleTrackCheckbox = checkbox('single-track-checkbox', 'Single Track Mode');
+        singleTrackCheckbox.onclick = function(){
             if(selectedTrack)
-                hideNonSelectedTracks = !hideNonSelectedTracks;
+                hideNonSelectedTracks = singleTrackCheckbox.checked;
         };
+
+        let deletePointsCheckbox = checkbox('delete-points-checkbox', 'Delete Track Points');
+        deletePointsCheckbox.onclick = function(){
+            deleteTrackPoints = deletePointsCheckbox.checked;
+        }
+
+        refreshGUI = function(){
+            for(let k in categorySelectData){
+                if(categorySelectData[k] === categoryToPlace)
+                    categorySelect.value = k;
+            }
+            for(let k in typeSelectData){
+                if(typeSelectData[k] === typeToPlace)
+                    typeSelect.value = k;
+            }
+            singleTrackCheckbox.checked = hideNonSelectedTracks;
+            singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
+            deletePointsCheckbox.checked = deleteTrackPoints;
+        };
+
+        refreshGUI();
     };
 
     _p5.keyTyped = function(){
-        if(key === 'd'){
-            categorySelect.value = 'Depression';
+        if(key === 'd')
             categoryToPlace = 0;
-        }else if(key === 's'){
-            categorySelect.value = 'Storm';
+        else if(key === 's')
             categoryToPlace = 1;
-        }else if(key === '1'){
-            categorySelect.value = 'Category 1';
+        else if(key === '1')
             categoryToPlace = 2;
-        }else if(key === '2'){
-            categorySelect.value = 'Category 2';
+        else if(key === '2')
             categoryToPlace = 3;
-        }else if(key === '3'){
-            categorySelect.value = 'Category 3';
+        else if(key === '3')
             categoryToPlace = 4;
-        }else if(key === '4'){
-            categorySelect.value = 'Category 4';
+        else if(key === '4')
             categoryToPlace = 5;
-        }else if(key === '5'){
-            categorySelect.value = 'Category 5';
+        else if(key === '5')
             categoryToPlace = 6;
-        }else if(key === 'u'){
-            categorySelect.value = 'Unknown';
+        else if(key === 'u')
             categoryToPlace = 7;
-        }else if(key === 't'){
-            typeSelect.value = 'Tropical';
+        else if(key === 't')
             typeToPlace = 0;
-        }else if(key === 'b'){
-            typeSelect.value = 'Subtropical';
+        else if(key === 'b')
             typeToPlace = 1;
-        }else if(key === 'x'){
-            typeSelect.value = 'Non-Tropical';
+        else if(key === 'x')
             typeToPlace = 2;
-        }else if(key === ' '){
+        else if(key === ' '){
             selectedTrack = undefined;
             if(hideNonSelectedTracks)
                 hideNonSelectedTracks = false;
         }else if(key === 'h'){
             if(selectedTrack)
                 hideNonSelectedTracks = !hideNonSelectedTracks;
-        }else return;
+        }else if(key === 'q')
+            deleteTrackPoints = !deleteTrackPoints;
+        else return;
+        refreshGUI();
         return false;
     };
 
