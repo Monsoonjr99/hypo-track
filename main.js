@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220207a';
+    const VERSION = '20220207b';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -93,6 +93,10 @@ var TrackMaker = (function(){
                             fill(COLORS[d.cat]);
                             if(hideNonSelectedTracks)
                                 noStroke();
+                            else if(selectedDot === d)
+                                stroke('#ff0000');
+                            else if(hoverDot === d)
+                                stroke('#ff6666');
                             else if(selectedTrack === tracks[i])
                                 stroke('#ffff00');
                             else if(hoverTrack === tracks[i])
@@ -226,27 +230,12 @@ var TrackMaker = (function(){
         if(mouseButton === LEFT && mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT-WIDTH/2) && mouseY < HEIGHT && loadedMapImg){
             beginClickX = mouseX;
             beginClickY = mouseY;
-            if(deleteTrackPoints){
+            if(deleteTrackPoints)
                 mouseMode = 3;
-            }else{
+            else if(hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot)
+                mouseMode = 2;
+            else
                 mouseMode = 0;
-                if(hoverTrack === selectedTrack && hoverDot){
-                    selectedDot = hoverDot;
-                    mouseMode = 2;
-                }
-                // for(let i=tracks.length-1;i>=0;i--){
-                //     for(let j=tracks[i].length-1;j>=0;j--){
-                //         let d = tracks[i][j];
-                //         let c = longLatToScreenCoords(d);
-                //         if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
-                //             selectedDot = d;
-                //             selectedTrack = tracks[i];
-                //             mouseMode = 2;
-                //             return;
-                //         }
-                //     }
-                // }
-            }
         }
     };
 
@@ -255,14 +244,22 @@ var TrackMaker = (function(){
             if(mouseMode === 0){
                 // if(keyIsDown(CONTROL))
                 //     selectedTrack = undefined;
-                if(hoverTrack)
+                if(hoverTrack){
                     selectedTrack = hoverTrack;
-                else{
+                    selectedDot = hoverDot;
+                }else{
+                    let insertIndex = 0;
                     if(!selectedTrack){
                         selectedTrack = [];
                         tracks.push(selectedTrack);
+                    }else{
+                        for(let i = 0; i < selectedTrack.length; i++){
+                            if(selectedTrack[i] === selectedDot)
+                                insertIndex = i + 1;
+                        }
                     }
-                    selectedTrack.push(new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace));
+                    selectedDot = new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace);
+                    selectedTrack.splice(insertIndex, 0, selectedDot);
                 }
             }else if(mouseMode === 2){
                 selectedDot.long = mouseLong();
@@ -274,9 +271,13 @@ var TrackMaker = (function(){
                         let c = longLatToScreenCoords(d);
                         if(c.inBounds && sqrt(sq(c.x-mouseX)+sq(c.y-mouseY))<pow(1.25,zoomAmt)){
                             tracks[i].splice(j,1);
+                            if(d === selectedDot && tracks[i].length > 0)
+                                selectedDot = tracks[i][tracks[i].length - 1];
                             if(tracks[i].length===0){
                                 if(selectedTrack === tracks[i])
                                     selectedTrack = undefined;
+                                if(selectedDot === d)
+                                    selectedDot = undefined;
                                 tracks.splice(i,1);
                             }
                             else
@@ -517,6 +518,7 @@ var TrackMaker = (function(){
             typeToPlace = 2;
         else if(key === ' '){
             selectedTrack = undefined;
+            selectedDot = undefined;
             if(hideNonSelectedTracks)
                 hideNonSelectedTracks = false;
         }else if(key === 'h'){
