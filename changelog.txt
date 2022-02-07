@@ -1,5 +1,11 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220207a:
+    + Added checkbox to toggle track point deletion mode
+        > Keyboard shortcut: "q"
+        > Shift-click no longer does anything special
+    * Single track mode button replaced with checkbox
+    * Deselect track button and single track mode checkbox greyed out when appropriate
 v20220205b:
     * Fixed placement of "Select Category" dropdown
     * Dropdowns now display correct value after using keyboard shortcuts
