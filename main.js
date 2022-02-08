@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220207b';
+    const VERSION = '20220208a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -77,46 +77,60 @@ var TrackMaker = (function(){
                     for(let j=0;j<tracks[i].length;j++){
                         let d = tracks[i][j];
                         let coords = longLatToScreenCoords(d);
+                        const worldWidth = WIDTH * zoomMult();
                         if(j<tracks[i].length-1){
                             d1 = tracks[i][j+1];
                             coords1 = longLatToScreenCoords(d1);
-                            if(coords.inBounds || coords1.inBounds){
+                            if(/* coords.inBounds || coords1.inBounds */ true){
                                 noFill();
                                 if(selectedTrack === tracks[i] && !hideNonSelectedTracks)
                                     stroke('#ffff00');
                                 else
                                     stroke('#ffffff');
-                                line(coords.x,coords.y,coords1.x,coords1.y);
+                                let x0 = coords.x;
+                                let x1 = coords1.x;
+                                if(x1 - x0 > worldWidth / 2)
+                                    x1 -= worldWidth;
+                                else if(x1 - x0 < -worldWidth / 2)
+                                    x1 += worldWidth;
+                                line(x0, coords.y, x1, coords1.y);
+                                line(x0 - worldWidth, coords.y, x1 - worldWidth, coords1.y);
+                                line(x0 + worldWidth, coords.y, x1 + worldWidth, coords1.y);
                             }
                         }
-                        if(coords.inBounds){
-                            fill(COLORS[d.cat]);
-                            if(hideNonSelectedTracks)
-                                noStroke();
-                            else if(selectedDot === d)
-                                stroke('#ff0000');
-                            else if(hoverDot === d)
-                                stroke('#ff6666');
-                            else if(selectedTrack === tracks[i])
-                                stroke('#ffff00');
-                            else if(hoverTrack === tracks[i])
-                                stroke('#ffffff');
-                            else
-                                noStroke();
-                            if(d.type === 0)
-                                ellipse(coords.x,coords.y,dotSize,dotSize);
-                            else if(d.type === 1)
-                                rect(coords.x-dotSize*0.35,coords.y-dotSize*0.35,dotSize*0.7,dotSize*0.7);
-                            else if(d.type === 2)
-                                triangle(
-                                    coords.x+dotSize/2.2*cos(PI/6),
-                                    coords.y+dotSize/2.2*sin(PI/6),
-                                    coords.x+dotSize/2.2*cos(5*PI/6),
-                                    coords.y+dotSize/2.2*sin(5*PI/6),
-                                    coords.x+dotSize/2.2*cos(3*PI/2),
-                                    coords.y+dotSize/2.2*sin(3*PI/2)
-                                    );
+                        fill(COLORS[d.cat]);
+                        if(hideNonSelectedTracks)
+                            noStroke();
+                        else if(selectedDot === d)
+                            stroke('#ff0000');
+                        else if(hoverDot === d)
+                            stroke('#ff00ff');
+                        else if(selectedTrack === tracks[i])
+                            stroke('#ffff00');
+                        else if(hoverTrack === tracks[i])
+                            stroke('#ffffff');
+                        else
+                            noStroke();
+                        function mark(x){
+                            if(x >= -dotSize/2 && x < WIDTH + dotSize/2 && coords.y >= (HEIGHT-WIDTH/2) - dotSize/2 && coords.y < HEIGHT + dotSize/2){
+                                if(d.type === 0)
+                                    ellipse(x,coords.y,dotSize,dotSize);
+                                else if(d.type === 1)
+                                    rect(x-dotSize*0.35,coords.y-dotSize*0.35,dotSize*0.7,dotSize*0.7);
+                                else if(d.type === 2)
+                                    triangle(
+                                        x+dotSize/2.2*cos(PI/6),
+                                        coords.y+dotSize/2.2*sin(PI/6),
+                                        x+dotSize/2.2*cos(5*PI/6),
+                                        coords.y+dotSize/2.2*sin(5*PI/6),
+                                        x+dotSize/2.2*cos(3*PI/2),
+                                        coords.y+dotSize/2.2*sin(3*PI/2)
+                                        );
+                            }
                         }
+                        mark(coords.x);
+                        mark(coords.x - worldWidth);
+                        mark(coords.x + worldWidth);
                     }
                 }
             }
@@ -350,7 +364,7 @@ var TrackMaker = (function(){
     function longLatToScreenCoords(long,lat){
         if(long instanceof TrackPoint)
             ({long, lat} = long);
-        let x = ((long - panLocation.long + 380) % 360 - 20) / mapViewWidth() * WIDTH;
+        let x = ((long - panLocation.long + 360) % 360) / mapViewWidth() * WIDTH;
         let y = (panLocation.lat - lat) / mapViewHeight() * WIDTH/2 + HEIGHT-WIDTH/2;
         let inBounds = x >= 0 && x < WIDTH && y >= (HEIGHT-WIDTH/2) && y < HEIGHT;
         return {x, y, inBounds};
