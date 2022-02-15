@@ -1,5 +1,8 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220215a:
+    + Added button to modify selected track point
+    * Dedicated CSS file in place of JS-defined styles
 v20220208a:
     * Better track rendering
         > Dots no longer disappear when halfway off the edge of the viewer

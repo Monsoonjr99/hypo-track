@@ -1,6 +1,6 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220208a';
+    const VERSION = '20220215a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -34,7 +34,8 @@ var TrackMaker = (function(){
         setVersion(TITLE + ' v',VERSION);
         document.title = TITLE;
 
-        createCanvas(WIDTH,HEIGHT);
+        let canvas = createCanvas(WIDTH,HEIGHT);
+        canvas.parent('canvas-container');
 
         zoomAmt = 0;
         panLocation = {
@@ -389,13 +390,12 @@ var TrackMaker = (function(){
 
     // GUI
 
-    let categorySelect,
-        typeSelect;
-
     window.onload = function(){
+        let uicontainer = document.querySelector('#ui-container');
+        uicontainer.style.left = (WIDTH + 20) + 'px';
+
         let dropdowns = document.createElement('div');
-        dropdowns.style.marginTop = '1em';
-        document.body.appendChild(dropdowns);
+        uicontainer.appendChild(dropdowns);
 
         function dropdown(id, label, data){
             let drop = document.createElement('select');
@@ -428,7 +428,7 @@ var TrackMaker = (function(){
             'Unknown': 7
         };
 
-        categorySelect = dropdown('category-select', 'Select Category:', categorySelectData);
+        let categorySelect = dropdown('category-select', 'Select Category:', categorySelectData);
         categorySelect.onchange = function(){
             categoryToPlace = categorySelectData[categorySelect.value];
         };
@@ -439,19 +439,17 @@ var TrackMaker = (function(){
             'Non-Tropical': 2
         };
 
-        typeSelect = dropdown('type-select', 'Select Type:', typeSelectData);
+        let typeSelect = dropdown('type-select', 'Select Type:', typeSelectData);
         typeSelect.onchange = function(){
             typeToPlace = typeSelectData[typeSelect.value];
         };
 
         let buttons = document.createElement('div');
-        buttons.style.marginTop = '1em';
-        document.body.appendChild(buttons);
+        uicontainer.appendChild(buttons);
 
         function button(label){
             let b = document.createElement('button');
             b.innerText = label;
-            b.style.marginRight = '1em';
             buttons.appendChild(b);
             buttons.appendChild(document.createElement('br'));
             return b;
@@ -479,6 +477,14 @@ var TrackMaker = (function(){
             refreshGUI();
         };
 
+        let modifyTrackPointButton = button('Modify Track Point');
+        modifyTrackPointButton.onclick = function(){
+            if(selectedDot){
+                selectedDot.cat = categorySelectData[categorySelect.value];
+                selectedDot.type = typeSelectData[typeSelect.value];
+            }
+        };
+
         let singleTrackCheckbox = checkbox('single-track-checkbox', 'Single Track Mode');
         singleTrackCheckbox.onclick = function(){
             if(selectedTrack)
@@ -502,6 +508,7 @@ var TrackMaker = (function(){
             singleTrackCheckbox.checked = hideNonSelectedTracks;
             singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
             deletePointsCheckbox.checked = deleteTrackPoints;
+            modifyTrackPointButton.disabled = !selectedDot;
         };
 
         refreshGUI();
