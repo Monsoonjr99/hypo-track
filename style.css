@@ -1,0 +1,9 @@
+#ui-container {
+    position: absolute;
+    top: 10px;
+    /* left defined in js from canvas width */
+}
+
+#ui-container div {
+    margin-bottom: 1em;
+}
