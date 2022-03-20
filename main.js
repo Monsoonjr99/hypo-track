@@ -1,10 +1,11 @@
 var TrackMaker = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220215a';
+    const VERSION = '20220320a';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
-    const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
+    const COLORS = ['#5ebaff','#00faf4','#fff795','#ffd821','#ff8f20','#ff6060','#c464d9','#c0c0c0'];
+    const COLORS_LEGACY = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
 
     let loadedMapImg,
         mapImgs,
@@ -23,7 +24,8 @@ var TrackMaker = (function(){
         selectedDot,
         selectedTrack,
         hideNonSelectedTracks,
-        deleteTrackPoints;
+        deleteTrackPoints,
+        useLegacyColors;
 
     let refreshGUI; // hoist function
 
@@ -99,7 +101,10 @@ var TrackMaker = (function(){
                                 line(x0 + worldWidth, coords.y, x1 + worldWidth, coords1.y);
                             }
                         }
-                        fill(COLORS[d.cat]);
+                        if(useLegacyColors)
+                            fill(COLORS_LEGACY[d.cat]);
+                        else
+                            fill(COLORS[d.cat]);
                         if(hideNonSelectedTracks)
                             noStroke();
                         else if(selectedDot === d)
@@ -496,6 +501,11 @@ var TrackMaker = (function(){
             deleteTrackPoints = deletePointsCheckbox.checked;
         }
 
+        let legacyColorCheckbox = checkbox('legacy-color-checkbox', 'Use Legacy Colors');
+        legacyColorCheckbox.onclick = function(){
+            useLegacyColors = legacyColorCheckbox.checked;
+        };
+
         refreshGUI = function(){
             for(let k in categorySelectData){
                 if(categorySelectData[k] === categoryToPlace)
@@ -509,6 +519,7 @@ var TrackMaker = (function(){
             singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
             deletePointsCheckbox.checked = deleteTrackPoints;
             modifyTrackPointButton.disabled = !selectedDot;
+            legacyColorCheckbox.checked = useLegacyColors;
         };
 
         refreshGUI();
@@ -547,6 +558,8 @@ var TrackMaker = (function(){
                 hideNonSelectedTracks = !hideNonSelectedTracks;
         }else if(key === 'q')
             deleteTrackPoints = !deleteTrackPoints;
+        else if(key === 'l')
+            useLegacyColors = !useLegacyColors;
         else return;
         refreshGUI();
         return false;

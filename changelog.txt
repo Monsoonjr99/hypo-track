@@ -1,5 +1,8 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220320a:
+    * Colors updated to match new Wikipedia storm colors
+        > Legacy colors can be toggled with a checkbox or keyboard shortcut "l"
 v20220215a:
     + Added button to modify selected track point
     * Dedicated CSS file in place of JS-defined styles
