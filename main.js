@@ -1,6 +1,7 @@
-var TrackMaker = (function(){
+var HypoTrack = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220320a';
+    const VERSION = '20220803a';
+    const IDB_KEY = 'hypo-track';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
@@ -25,7 +26,10 @@ var TrackMaker = (function(){
         selectedTrack,
         hideNonSelectedTracks,
         deleteTrackPoints,
-        useLegacyColors;
+        useLegacyColors,
+        saveName,
+        autosave,
+        saveLoadReady;
 
     let refreshGUI; // hoist function
 
@@ -48,6 +52,8 @@ var TrackMaker = (function(){
         tracks = [];
         categoryToPlace = 0;
         typeToPlace = 0;
+        autosave = true;
+        saveLoadReady = true;
 
         mapImgs = {};
         
@@ -218,6 +224,54 @@ var TrackMaker = (function(){
         }
     }
 
+    // Database //
+
+    let Database = (()=>{
+        let db = new Dexie(IDB_KEY);
+
+        db.version(1).stores({
+            saves: ''
+        });
+
+        async function save(){
+            if(saveLoadReady){
+                saveLoadReady = false;
+                let key = saveName || 'Autosave';
+                await db.saves.put(tracks, key);
+                saveLoadReady = true;
+                refreshGUI();
+            }
+        }
+
+        async function load(){
+            if(saveLoadReady){
+                saveLoadReady = false;
+                let key = saveName || 'Autosave';
+                tracks = await db.saves.get(key);
+                for(let track of tracks){
+                    for(let i = 0; i < track.length; i++){
+                        track[i] = Object.assign(Object.create(TrackPoint.prototype), track[i]);
+                    }
+                }
+                saveLoadReady = true;
+                refreshGUI();
+            }
+        }
+
+        async function list(){
+            return await db.saves.toCollection().primaryKeys();
+        }
+
+        async function delete_(){
+            let key = saveName || 'Autosave';
+            await db.saves.delete(key);
+        }
+
+        return {save, load, list, delete: delete_};
+    })();
+
+    // Mouse UI //
+
     _p5.mouseWheel = function(evt){
         let delta = evt.delta;
         if(mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT-WIDTH/2) && mouseY < HEIGHT && loadedMapImg){
@@ -250,7 +304,9 @@ var TrackMaker = (function(){
         if(mouseButton === LEFT && mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT-WIDTH/2) && mouseY < HEIGHT && loadedMapImg){
             beginClickX = mouseX;
             beginClickY = mouseY;
-            if(deleteTrackPoints)
+            if(!saveLoadReady)
+                mouseMode = 0;
+            else if(deleteTrackPoints)
                 mouseMode = 3;
             else if(hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot)
                 mouseMode = 2;
@@ -267,7 +323,7 @@ var TrackMaker = (function(){
                 if(hoverTrack){
                     selectedTrack = hoverTrack;
                     selectedDot = hoverDot;
-                }else{
+                }else if(saveLoadReady){
                     let insertIndex = 0;
                     if(!selectedTrack){
                         selectedTrack = [];
@@ -280,10 +336,14 @@ var TrackMaker = (function(){
                     }
                     selectedDot = new TrackPoint(mouseLong(),mouseLat(),categoryToPlace,typeToPlace);
                     selectedTrack.splice(insertIndex, 0, selectedDot);
+                    if(autosave)
+                        Database.save();
                 }
             }else if(mouseMode === 2){
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
+                if(autosave)
+                    Database.save();
             }else if(mouseMode === 3){
                 for(let i=tracks.length-1, done = false; i>=0 && !done; i--){
                     for(let j=tracks[i].length-1;j>=0 && !done;j--){
@@ -303,6 +363,12 @@ var TrackMaker = (function(){
                             else
                                 selectedTrack = tracks[i];
                             done = true;
+                            if(autosave){
+                                if(tracks.length === 0)
+                                    Database.delete();
+                                else
+                                    Database.save();
+                            }
                         }
                     }
                 }
@@ -393,34 +459,83 @@ var TrackMaker = (function(){
         }
     }
 
-    // GUI
+    // GUI //
+
+    let suppresskeybinds = false;
 
     window.onload = function(){
         let uicontainer = document.querySelector('#ui-container');
         uicontainer.style.left = (WIDTH + 20) + 'px';
 
-        let dropdowns = document.createElement('div');
-        uicontainer.appendChild(dropdowns);
+        function div(appendTo){
+            let d = document.createElement('div');
+            appendTo.appendChild(d);
+            return d;
+        }
 
-        function dropdown(id, label, data){
+        function dropdownOption(value, appendTo){
+            let o = document.createElement('option');
+            o.value = value;
+            o.innerText = value;
+            appendTo.appendChild(o);
+            return o;
+        }
+
+        function dropdown(id, label, data, appendTo){
             let drop = document.createElement('select');
             drop.id = id;
             let l = document.createElement('label');
             l.htmlFor = drop.id;
             l.innerText = label;
-            dropdowns.appendChild(l);
-            dropdowns.appendChild(drop);
-            dropdowns.appendChild(document.createElement('br'));
+            appendTo.appendChild(l);
+            appendTo.appendChild(drop);
+            appendTo.appendChild(document.createElement('br'));
     
             for(let key in data){
-                let o = document.createElement('option');
-                o.value = key;
-                o.innerText = key;
-                drop.appendChild(o);
+                dropdownOption(key, drop);
             }
 
             return drop;
         }
+
+        function button(label, appendTo){
+            let b = document.createElement('button');
+            b.innerText = label;
+            appendTo.appendChild(b);
+            appendTo.appendChild(document.createElement('br'));
+            return b;
+        }
+
+        function checkbox(id, label, appendTo){
+            let b = document.createElement('input');
+            b.type = 'checkbox';
+            b.id = id;
+            let l = document.createElement('label');
+            l.htmlFor = b.id;
+            l.innerText = label;
+            appendTo.appendChild(l);
+            appendTo.appendChild(b);
+            appendTo.appendChild(document.createElement('br'));
+            return b;
+        }
+
+        function textbox(id, label, appendTo){
+            let t = document.createElement('input');
+            t.type = 'text';
+            t.addEventListener('focus', ()=>suppresskeybinds=true);
+            t.addEventListener('blur', ()=>suppresskeybinds=false);
+            t.id = id;
+            let l = document.createElement('label');
+            l.htmlFor = t.id;
+            l.innerText = label;
+            appendTo.appendChild(l);
+            appendTo.appendChild(t);
+            appendTo.appendChild(document.createElement('br'));
+            return t;
+        }
+
+        // Dropdowns div //
+        let dropdowns = div(uicontainer);
         
         let categorySelectData = {
             'Depression': 0,
@@ -433,47 +548,26 @@ var TrackMaker = (function(){
             'Unknown': 7
         };
 
-        let categorySelect = dropdown('category-select', 'Select Category:', categorySelectData);
-        categorySelect.onchange = function(){
-            categoryToPlace = categorySelectData[categorySelect.value];
-        };
-
         let typeSelectData = {
             'Tropical': 0,
             'Subtropical': 1,
             'Non-Tropical': 2
         };
 
-        let typeSelect = dropdown('type-select', 'Select Type:', typeSelectData);
+        let categorySelect = dropdown('category-select', 'Select Category:', categorySelectData, dropdowns);
+        categorySelect.onchange = function(){
+            categoryToPlace = categorySelectData[categorySelect.value];
+        };
+
+        let typeSelect = dropdown('type-select', 'Select Type:', typeSelectData, dropdowns);
         typeSelect.onchange = function(){
             typeToPlace = typeSelectData[typeSelect.value];
         };
 
-        let buttons = document.createElement('div');
-        uicontainer.appendChild(buttons);
+        // Buttons div //
+        let buttons = div(uicontainer);
 
-        function button(label){
-            let b = document.createElement('button');
-            b.innerText = label;
-            buttons.appendChild(b);
-            buttons.appendChild(document.createElement('br'));
-            return b;
-        }
-
-        function checkbox(id, label){
-            let b = document.createElement('input');
-            b.type = 'checkbox';
-            b.id = id;
-            let l = document.createElement('label');
-            l.htmlFor = b.id;
-            l.innerText = label;
-            buttons.appendChild(l);
-            buttons.appendChild(b);
-            buttons.appendChild(document.createElement('br'));
-            return b;
-        }
-
-        let deselectButton = button('Deselect Track');
+        let deselectButton = button('Deselect Track', buttons);
         deselectButton.onclick = function(){
             selectedTrack = undefined;
             selectedDot = undefined;
@@ -482,28 +576,81 @@ var TrackMaker = (function(){
             refreshGUI();
         };
 
-        let modifyTrackPointButton = button('Modify Track Point');
+        let modifyTrackPointButton = button('Modify Track Point', buttons);
         modifyTrackPointButton.onclick = function(){
             if(selectedDot){
                 selectedDot.cat = categorySelectData[categorySelect.value];
                 selectedDot.type = typeSelectData[typeSelect.value];
+                if(autosave)
+                    Database.save();
             }
         };
 
-        let singleTrackCheckbox = checkbox('single-track-checkbox', 'Single Track Mode');
+        let singleTrackCheckbox = checkbox('single-track-checkbox', 'Single Track Mode', buttons);
         singleTrackCheckbox.onclick = function(){
             if(selectedTrack)
                 hideNonSelectedTracks = singleTrackCheckbox.checked;
         };
 
-        let deletePointsCheckbox = checkbox('delete-points-checkbox', 'Delete Track Points');
+        let deletePointsCheckbox = checkbox('delete-points-checkbox', 'Delete Track Points', buttons);
         deletePointsCheckbox.onclick = function(){
             deleteTrackPoints = deletePointsCheckbox.checked;
         }
 
-        let legacyColorCheckbox = checkbox('legacy-color-checkbox', 'Use Legacy Colors');
+        let legacyColorCheckbox = checkbox('legacy-color-checkbox', 'Use Legacy Colors', buttons);
         legacyColorCheckbox.onclick = function(){
             useLegacyColors = legacyColorCheckbox.checked;
+        };
+
+        let autosaveCheckbox = checkbox('autosave-checkbox', 'Autosave', buttons);
+        autosaveCheckbox.onclick = function(){
+            autosave = autosaveCheckbox.checked;
+        };
+
+        // Save/Load UI //
+
+        let newSeasonButton = button('New Season', div(uicontainer));
+        newSeasonButton.onclick = function(){
+            tracks = [];
+            saveName = undefined;
+            refreshGUI();
+        };
+
+        let saveloadui = div(uicontainer);
+
+        let saveButton = button('Save', saveloadui);
+        let saveNameTextbox = textbox('save-name-textbox', 'Season Save Name:', saveloadui);
+        let loadDropdown = dropdown('load-season-dropdown', 'Load Season', {}, saveloadui);
+
+        async function refreshLoadDropdown(){
+            let saveList = await Database.list();
+            loadDropdown.replaceChildren();
+            for(let item of saveList)
+                dropdownOption(item, loadDropdown);
+            loadDropdown.value = '';
+        }
+
+        saveNameTextbox.maxLength = 32;
+        saveButton.onclick = function(){
+            let validityCheck = /^[a-zA-Z0-9 _\-]{4,32}$/g; // must equal a 4-32 character string of lower-case letters, upper-case letters, digits, spaces, underscores, and hyphens
+            if(validityCheck.test(saveNameTextbox.value)){
+                saveName = saveNameTextbox.value;
+                Database.save();
+                refreshGUI();
+            }else
+                alert('Save names must be at least 4 characters long and only contain letters, numbers, spaces, underscores, or hyphens');
+        };
+
+        loadDropdown.onchange = function(){
+            if(loadDropdown.value){
+                saveName = loadDropdown.value;
+                Database.load();
+                selectedTrack = undefined;
+                selectedDot = undefined;
+                if(hideNonSelectedTracks)
+                    hideNonSelectedTracks = false;
+                refreshGUI();
+            }
         };
 
         refreshGUI = function(){
@@ -518,14 +665,24 @@ var TrackMaker = (function(){
             singleTrackCheckbox.checked = hideNonSelectedTracks;
             singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
             deletePointsCheckbox.checked = deleteTrackPoints;
-            modifyTrackPointButton.disabled = !selectedDot;
+            modifyTrackPointButton.disabled = !selectedDot || !saveLoadReady;
             legacyColorCheckbox.checked = useLegacyColors;
+            autosaveCheckbox.checked = autosave;
+            saveButton.disabled = loadDropdown.disabled = newSeasonButton.disabled = !saveLoadReady;
+            if(saveName)
+                saveNameTextbox.value = saveName;
+            else
+                saveNameTextbox.value = '';
+            refreshLoadDropdown();
         };
 
         refreshGUI();
     };
 
     _p5.keyTyped = function(){
+        if(suppresskeybinds)
+            return;
+
         if(key === 'd')
             categoryToPlace = 0;
         else if(key === 's')
@@ -560,6 +717,8 @@ var TrackMaker = (function(){
             deleteTrackPoints = !deleteTrackPoints;
         else if(key === 'l')
             useLegacyColors = !useLegacyColors;
+        else if(key === 'a')
+            autosave = !autosave;
         else return;
         refreshGUI();
         return false;
