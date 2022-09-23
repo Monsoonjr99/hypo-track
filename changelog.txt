@@ -1,5 +1,7 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20220923a:
+    * Legacy colors now enabled by default to match the Wikipedia status quo
 v20220803a:
     + Added saving/loading of seasons
     + Added autosave
