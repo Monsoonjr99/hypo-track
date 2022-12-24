@@ -1,12 +1,12 @@
 var HypoTrack = (function(){
     const TITLE = 'Hypo TC Track Maker';
-    const VERSION = '20220923a';
+    const VERSION = '20221224a';
     const IDB_KEY = 'hypo-track';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
-    const COLORS = ['#5ebaff','#00faf4','#fff795','#ffd821','#ff8f20','#ff6060','#c464d9','#c0c0c0'];
-    const COLORS_LEGACY = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
+    const COLORS_ALT = ['#5ebaff','#00faf4','#fff795','#ffd821','#ff8f20','#ff6060','#c464d9','#c0c0c0'];
+    const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
 
     let loadedMapImg,
         mapImgs,
@@ -26,7 +26,7 @@ var HypoTrack = (function(){
         selectedTrack,
         hideNonSelectedTracks,
         deleteTrackPoints,
-        useLegacyColors,
+        useAltColors,
         saveName,
         autosave,
         saveLoadReady;
@@ -52,7 +52,7 @@ var HypoTrack = (function(){
         tracks = [];
         categoryToPlace = 0;
         typeToPlace = 0;
-        useLegacyColors = true;
+        useAltColors = false;
         autosave = true;
         saveLoadReady = true;
 
@@ -108,8 +108,8 @@ var HypoTrack = (function(){
                                 line(x0 + worldWidth, coords.y, x1 + worldWidth, coords1.y);
                             }
                         }
-                        if(useLegacyColors)
-                            fill(COLORS_LEGACY[d.cat]);
+                        if(useAltColors)
+                            fill(COLORS_ALT[d.cat]);
                         else
                             fill(COLORS[d.cat]);
                         if(hideNonSelectedTracks)
@@ -598,9 +598,9 @@ var HypoTrack = (function(){
             deleteTrackPoints = deletePointsCheckbox.checked;
         }
 
-        let legacyColorCheckbox = checkbox('legacy-color-checkbox', 'Use Legacy Colors', buttons);
-        legacyColorCheckbox.onclick = function(){
-            useLegacyColors = legacyColorCheckbox.checked;
+        let altColorCheckbox = checkbox('alt-color-checkbox', 'Use Alternate Colors (2022 Wikipedia)', buttons);
+        altColorCheckbox.onclick = function(){
+            useAltColors = altColorCheckbox.checked;
         };
 
         let autosaveCheckbox = checkbox('autosave-checkbox', 'Autosave', buttons);
@@ -667,7 +667,7 @@ var HypoTrack = (function(){
             singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
             deletePointsCheckbox.checked = deleteTrackPoints;
             modifyTrackPointButton.disabled = !selectedDot || !saveLoadReady;
-            legacyColorCheckbox.checked = useLegacyColors;
+            altColorCheckbox.checked = useAltColors;
             autosaveCheckbox.checked = autosave;
             saveButton.disabled = loadDropdown.disabled = newSeasonButton.disabled = !saveLoadReady;
             if(saveName)
@@ -717,7 +717,7 @@ var HypoTrack = (function(){
         }else if(key === 'q')
             deleteTrackPoints = !deleteTrackPoints;
         else if(key === 'l')
-            useLegacyColors = !useLegacyColors;
+            useAltColors = !useAltColors;
         else if(key === 'a')
             autosave = !autosave;
         else return;

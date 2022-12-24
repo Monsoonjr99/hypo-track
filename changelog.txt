@@ -1,5 +1,9 @@
 About: A tool for making hypothetical tropical cyclone tracks (WIP)
 
+v20221224a:
+    * Reverted color schemes following wikipedia consensus (or lack thereof)
+        > "Legacy" colors now the primary color scheme
+        > Checkbox now toggles alternate colors (the now reverted 2022 Wikipedia colors which never got used in tracks)
 v20220923a:
     * Legacy colors now enabled by default to match the Wikipedia status quo
 v20220803a:
