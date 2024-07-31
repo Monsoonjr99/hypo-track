@@ -1,5 +1,11 @@
-About: A tool for making hypothetical tropical cyclone tracks (WIP)
+About: A browser-based tool for creating hypothetical tropical cyclone tracks
 
+v0.1 (2024-07-31):
+    * Graduated /experiments! (yippee!)
+        > Christened "HypoTrack"
+        > Now has its own repository and moved to a new URL
+        > Proper version numbering
+        > Mostly identical to last /experiments version; formality to commence new development on this project
 v20221224a:
     * Reverted color schemes following wikipedia consensus (or lack thereof)
         > "Legacy" colors now the primary color scheme
