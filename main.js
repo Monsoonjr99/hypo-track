@@ -1,11 +1,11 @@
 var HypoTrack = (function(){
     const TITLE = 'HypoTrack';
-    const VERSION = '0.1';
+    const VERSION = '0.1.1';
     const IDB_KEY = 'hypo-track';
 
     const WIDTH = 1000;
     const HEIGHT = 500;
-    const COLORS_ALT = ['#5ebaff','#00faf4','#fff795','#ffd821','#ff8f20','#ff6060','#c464d9','#c0c0c0'];
+    const COLORS_ALT = ['#6ec1ea','#4dffff','#ffffd9','#ffd98c','#ff9e59','#ff738a','#a188fc','#c0c0c0'];
     const COLORS = ['#5ebaff','#00faf4','#ffffcc','#ffe775','#ffc140','#ff8f20','#ff6060','#c0c0c0'];
 
     let loadedMapImg,
@@ -598,7 +598,7 @@ var HypoTrack = (function(){
             deleteTrackPoints = deletePointsCheckbox.checked;
         }
 
-        let altColorCheckbox = checkbox('alt-color-checkbox', 'Use Alternate Colors (2022 Wikipedia)', buttons);
+        let altColorCheckbox = checkbox('alt-color-checkbox', 'Use Accessible Colors', buttons);
         altColorCheckbox.onclick = function(){
             useAltColors = altColorCheckbox.checked;
         };
