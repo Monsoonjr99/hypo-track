@@ -1,5 +1,7 @@
 About: A browser-based tool for creating hypothetical tropical cyclone tracks
 
+v0.1.1 (2024-07-31):
+    * Updated alternate color setting with new accessible colors used by Wikipedia
 v0.1 (2024-07-31):
     * Graduated /experiments! (yippee!)
         > Christened "HypoTrack"
