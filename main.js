@@ -59,10 +59,10 @@ var HypoTrack = (function(){
         mapImgs = {};
         
         Promise.all([
-            loadImg('resources/map_NW.jpg'),
-            loadImg('resources/map_NE.jpg'),
-            loadImg('resources/map_SW.jpg'),
-            loadImg('resources/map_SE.jpg')
+            loadImg('resources/map_hi-res_NW.jpg'),
+            loadImg('resources/map_hi-res_NE.jpg'),
+            loadImg('resources/map_hi-res_SW.jpg'),
+            loadImg('resources/map_hi-res_SE.jpg')
         ]).then(imgs=>{
             mapImgs.nw = imgs[0];
             mapImgs.ne = imgs[1];
