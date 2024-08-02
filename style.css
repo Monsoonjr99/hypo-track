@@ -1,19 +1,19 @@
-body{
+body {
 	background: #BBB;
-	background: -o-linear-gradient(#BBB,#F3F3F3);
-	background: -webkit-linear-gradient(#BBB,#F3F3F3);
-	background: -moz-linear-gradient(#BBB,#F3F3F3);
-	background: linear-gradient(#BBB,#F3F3F3);
+	background: -o-linear-gradient(#BBB, #F3F3F3);
+	background: -webkit-linear-gradient(#BBB, #F3F3F3);
+	background: -moz-linear-gradient(#BBB, #F3F3F3);
+	background: linear-gradient(#BBB, #F3F3F3);
 	font-family: Verdana, Arial, Calibri;
 }
 
-a{
+a {
 	display: inline-block;
 	text-decoration: none;
 	color: blue;
 }
 
-#version{
+#version {
 	position: fixed;
 	bottom: 0px;
 	right: 0px;
@@ -26,7 +26,7 @@ a{
 	-ms-user-select: none;
 }
 
-a:after{
+a:after {
 	display: block;
 	content: '';
 	border-bottom: solid 1px black;
@@ -34,30 +34,27 @@ a:after{
 	transition: transform 300ms;
 }
 
-a:hover, a#version:hover{
+a:hover,
+a#version:hover {
 	color: black;
 	transform-origin: 50% 50%;
 }
 
-a:hover:after{
+a:hover:after {
 	transform: scaleX(1);
 }
 
-ul{
+ul {
 	list-style: none;
 	text-align: center;
 }
 
-
-
-
-
 #ui-container {
-    position: absolute;
-    top: 10px;
-    /* left defined in js from canvas width */
+	position: absolute;
+	top: 10px;
+	/* left defined in js from canvas width */
 }
 
 #ui-container div {
-    margin-bottom: 1em;
+	margin-bottom: 1em;
 }
