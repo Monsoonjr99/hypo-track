@@ -1,16 +1,13 @@
 body {
 	background: #BBB;
-	background: -o-linear-gradient(#BBB, #F3F3F3);
-	background: -webkit-linear-gradient(#BBB, #F3F3F3);
-	background: -moz-linear-gradient(#BBB, #F3F3F3);
 	background: linear-gradient(#BBB, #F3F3F3);
 	font-family: Verdana, Arial, Calibri;
 }
 
 a {
+	color: blue;
 	display: inline-block;
 	text-decoration: none;
-	color: blue;
 }
 
 #version {
@@ -21,9 +18,6 @@ a {
 	padding: 10px;
 	z-index: 100;
 	user-select: none;
-	-moz-user-select: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
 }
 
 a:after {
