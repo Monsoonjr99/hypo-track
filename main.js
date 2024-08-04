@@ -59,11 +59,11 @@ var HypoTrack = (function () {
         mapImgs = {};
 
         Promise.all([
-            loadImg('resources/map_NW.jpg'),
-            loadImg('resources/map_NE.jpg'),
-            loadImg('resources/map_SW.jpg'),
-            loadImg('resources/map_SE.jpg')
-        ]).then(imgs => {
+            'resources/map_NW.jpg',
+            'resources/map_NE.jpg',
+            'resources/map_SW.jpg',
+            'resources/map_SE.jpg'
+        ].map(loadImg)).then(imgs => {
             mapImgs.nw = imgs[0];
             mapImgs.ne = imgs[1];
             mapImgs.sw = imgs[2];
@@ -288,7 +288,7 @@ var HypoTrack = (function () {
             let mx = mouseX;
             let my = mouseY - (HEIGHT - viewerH);
             panLocation.long += dw * mx / viewerW;
-            panLocation.lat -= dh * my / viewerH;
+            panLocation.lat = beginPanY + mvh * dy / viewerH;
             if (panLocation.long < -180)
                 panLocation.long = 180 - (180 - panLocation.long) % 360;
             if (panLocation.long >= 180)
