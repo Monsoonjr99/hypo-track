@@ -445,11 +445,9 @@ var HypoTrack = (function () {
         return { x, y, inBounds };
     }
 
-    function loadImg(path) {     // wrap p5.loadImage in a promise
+    function loadImg(path) {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                loadImage(path, resolve, reject);
-            });
+            loadImage(path, resolve, reject);
         });
     }
 
