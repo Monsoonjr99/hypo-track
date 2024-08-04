@@ -236,7 +236,15 @@ var HypoTrack = (function () {
             saves: ''
         });
 
+        let lastSave = 0;
+        const SAVE_DELAY = 2000; // so we save every 2 seconds
+
         async function save() {
+            const now = performance.now();
+            if (now - lastSave < SAVE_DELAY)
+                return;
+            lastSave = now;
+
             if (saveLoadReady) {
                 saveLoadReady = false;
                 let key = saveName || 'Autosave';
@@ -384,7 +392,15 @@ var HypoTrack = (function () {
         }
     };
 
+    let lastMouseDragged = 0;
+    const MOUSE_DRAG_DELAY = 16; // so around ~60 fps
+
     _p5.mouseDragged = function () {
+        const now = performance.now();
+        if (now - lastMouseDragged < MOUSE_DRAG_DELAY)
+            return;
+        lastMouseDragged = now;
+
         if (mouseButton === LEFT && beginClickX && beginClickY) {
             if (mouseMode === 2 && selectedDot) {
                 selectedDot.long = mouseLong();
