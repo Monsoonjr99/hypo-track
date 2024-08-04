@@ -70,9 +70,14 @@ var HypoTrack = (function () {
             'resources/map_SW.jpg',
             'resources/map_SE.jpg'
         ];
-        const promises = paths.map(path => loadImg(path));
-        const imgs = await Promise.all(promises);
-        [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+        try {
+            const promises = paths.map(path => loadImg(path));
+            const imgs = await Promise.all(promises);
+            [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+        } catch (error) {
+            console.error("Error loading images:", error);
+            mapImgs = {};
+        }
     }
 
     _p5.draw = function () {
@@ -247,25 +252,35 @@ var HypoTrack = (function () {
 
             if (saveLoadReady) {
                 saveLoadReady = false;
-                let key = saveName || 'Autosave';
-                await db.saves.put(tracks, key);
-                saveLoadReady = true;
-                refreshGUI();
+                try {
+                    let key = saveName || 'Autosave';
+                    await db.saves.put(tracks, key);
+                } catch (error) {
+                    console.error("Error saving to database:", error);
+                } finally {
+                    saveLoadReady = true;
+                    refreshGUI();
+                }
             }
         }
 
         async function load() {
             if (saveLoadReady) {
                 saveLoadReady = false;
-                let key = saveName || 'Autosave';
-                tracks = await db.saves.get(key);
-                for (let track of tracks) {
-                    for (let i = 0; i < track.length; i++) {
-                        track[i] = Object.assign(Object.create(TrackPoint.prototype), track[i]);
+                try {
+                    let key = saveName || 'Autosave';
+                    tracks = await db.saves.get(key) || [];
+                    for (let track of tracks) {
+                        for (let i = 0; i < track.length; i++) {
+                            track[i] = Object.assign(Object.create(TrackPoint.prototype), track[i]);
+                        }
                     }
+                } catch (error) {
+                    console.error("Error loading from database:", error);
+                } finally {
+                    saveLoadReady = true;
+                    refreshGUI();
                 }
-                saveLoadReady = true;
-                refreshGUI();
             }
         }
 
