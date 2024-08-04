@@ -1,36 +1,41 @@
 body {
-	background: #BBB;
-	background: linear-gradient(#BBB, #F3F3F3);
-	font-family: Verdana, Arial, Calibri;
+	background: #00FFFF;
+	background: linear-gradient(#00FFFF, #FF69B4);
+	font-family: "Comic Sans MS", "Arial", sans-serif;
+	color: #000080;
 }
 
 a {
-	color: blue;
+	color: #FF4500;
 	display: inline-block;
 	text-decoration: none;
+	font-weight: bold;
 }
 
 #version {
 	position: fixed;
 	bottom: 0px;
 	right: 0px;
-	color: #777;
-	padding: 10px;
+	color: #000080;
+	padding: .4rem;
 	z-index: 100;
 	user-select: none;
+	background-color: #FFFF00;
+	border: .15rem solid #000080;
+	font-size: 12px;
 }
 
 a:after {
 	display: block;
 	content: '';
-	border-bottom: solid 1px black;
+	border-bottom: .15rem solid #000080;
 	transform: scaleX(0);
 	transition: transform 300ms;
 }
 
 a:hover,
 a#version:hover {
-	color: black;
+	color: #000080;
 	transform-origin: 50% 50%;
 }
 
@@ -41,14 +46,33 @@ a:hover:after {
 ul {
 	list-style: none;
 	text-align: center;
+	padding: 0;
+}
+
+ul li {
+	padding: 5px 0;
 }
 
 #ui-container {
 	position: absolute;
 	top: 10px;
-	/* left defined in js from canvas width */
+	left: 10px;
+	background-color: #FF69B4;
+	border: .15rem solid #000080;
+	padding: 1rem;
+	border-radius: .2rem .8rem;
 }
 
 #ui-container div {
-	margin-bottom: 1em;
+	margin-bottom: .75rem;
+	background-color: #FFFF00;
+	padding: .75rem;
+	border: .15rem solid #000080;
+	border-radius: .4rem;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+	margin: 0 auto;
 }
