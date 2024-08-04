@@ -58,19 +58,22 @@ var HypoTrack = (function () {
 
         mapImgs = {};
 
-        Promise.all([
+        loadImages().then(() => {
+            loadedMapImg = true;
+        });
+    };
+
+    async function loadImages() {
+        const paths = [
             'resources/map_NW.jpg',
             'resources/map_NE.jpg',
             'resources/map_SW.jpg',
             'resources/map_SE.jpg'
-        ].map(loadImg)).then(imgs => {
-            mapImgs.nw = imgs[0];
-            mapImgs.ne = imgs[1];
-            mapImgs.sw = imgs[2];
-            mapImgs.se = imgs[3];
-            loadedMapImg = true;
-        });
-    };
+        ];
+        const promises = paths.map(path => loadImg(path));
+        const imgs = await Promise.all(promises);
+        [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+    }
 
     _p5.draw = function () {
         background(255);
