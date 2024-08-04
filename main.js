@@ -59,15 +59,17 @@ var HypoTrack = (function(){
         mapImgs = {};
         
         Promise.all([
+            loadImg('resources/map_regular.jpg'),
             loadImg('resources/map_hi-res_NW.jpg'),
             loadImg('resources/map_hi-res_NE.jpg'),
             loadImg('resources/map_hi-res_SW.jpg'),
             loadImg('resources/map_hi-res_SE.jpg')
         ]).then(imgs=>{
-            mapImgs.nw = imgs[0];
-            mapImgs.ne = imgs[1];
-            mapImgs.sw = imgs[2];
-            mapImgs.se = imgs[3];
+            mapImgs.regular = imgs[0];
+            mapImgs.nw = imgs[1];
+            mapImgs.ne = imgs[2];
+            mapImgs.sw = imgs[3];
+            mapImgs.se = imgs[4];
             loadedMapImg = true;
         });
     };
@@ -199,30 +201,34 @@ var HypoTrack = (function(){
             image(img, dx, dy, dw, dh, sx, sy, sw, sh);
         };
 
-        if(west < 0){
-            if(north > 0)
-                drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
-            if(south < 0)
-                drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
-        }
-        if(east > 0){
-            if(north > 0)
-                drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
-            if(south < 0)
-                drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
-        }
-        if(east > 180){
-            if(north > 0)
-                drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
-            if(south < 0)
-                drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
-        }
-        if(east > 360){
-            if(north > 0)
-                drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
-            if(south < 0)
-                drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
-        }
+        // if(west < 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
+        // }
+        // if(east > 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
+        // }
+        // if(east > 180){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
+        // }
+        // if(east > 360){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
+        // }
+
+        drawSection(mapImgs.regular, -180, 180, 90, -90, west, min(east, 180), north, south);
+        if(east > 180)
+            drawSection(mapImgs.regular, 180, 540, 90, -90, 180, east, north, south);
     }
 
     // Database //
