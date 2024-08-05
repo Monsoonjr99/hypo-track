@@ -58,18 +58,23 @@ var HypoTrack = (function(){
 
         mapImgs = {};
         
-        Promise.all([
-            loadImg('resources/map_regular.jpg'),
-            loadImg('resources/map_hi-res_NW.jpg'),
-            loadImg('resources/map_hi-res_NE.jpg'),
-            loadImg('resources/map_hi-res_SW.jpg'),
-            loadImg('resources/map_hi-res_SE.jpg')
-        ]).then(imgs=>{
-            mapImgs.regular = imgs[0];
-            mapImgs.nw = imgs[1];
-            mapImgs.ne = imgs[2];
-            mapImgs.sw = imgs[3];
-            mapImgs.se = imgs[4];
+        // Promise.all([
+        //     loadImg('resources/map_regular.jpg'),
+        //     loadImg('resources/map_hi-res_NW.jpg'),
+        //     loadImg('resources/map_hi-res_NE.jpg'),
+        //     loadImg('resources/map_hi-res_SW.jpg'),
+        //     loadImg('resources/map_hi-res_SE.jpg')
+        // ]).then(imgs=>{
+        //     mapImgs.regular = imgs[0];
+        //     mapImgs.nw = imgs[1];
+        //     mapImgs.ne = imgs[2];
+        //     mapImgs.sw = imgs[3];
+        //     mapImgs.se = imgs[4];
+        //     loadedMapImg = true;
+        // });
+
+        loadImg('resources/map_regular.jpg').then(img=>{
+            mapImgs.regular = img;
             loadedMapImg = true;
         });
     };
