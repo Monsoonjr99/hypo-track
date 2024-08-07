@@ -59,8 +59,8 @@ ul li {
 
 #ui-container {
 	position: absolute;
-	top: 10;
-	left: 10;
+	top: 10px;
+	left: 10px;
 	background-color: #FF69B4;
 	border: .15rem solid #000080;
 	padding: 1rem;
