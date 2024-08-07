@@ -1,12 +1,12 @@
-versionLink = document.getElementById("version");
+const versionLink = document.getElementById("version");
 
-Version = {};
-
-Version.number = "0.0";
-Version.prefix = "v";
+const Version = {
+	number: "0.0",
+	prefix: "v"
+};
 
 function versionLinkUpdate() {
-	versionLink.innerHTML = Version.prefix + Version.number;
+	versionLink.textContent = `${Version.prefix}${Version.number}`;
 }
 
 function versionNumber(val) {
@@ -19,9 +19,8 @@ function versionPrefix(val) {
 	versionLinkUpdate();
 }
 
-function setVersion(p, n) {
-	Version.prefix = p;
-	Version.number = n;
+function setVersion(prefix, number) {
+	[Version.prefix, Version.number] = [prefix, number];
 	versionLinkUpdate();
 }
 
