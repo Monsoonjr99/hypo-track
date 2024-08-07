@@ -57,28 +57,33 @@ var HypoTrack = (function () {
         saveLoadReady = true;
 
         mapImgs = {};
+        
+        // loadImages().then(() => {
+        //     loadedMapImg = true;
+        // });
 
-        loadImages().then(() => {
+        loadImg('resources/map_regular.jpg').then(img=>{
+            mapImgs.regular = img;
             loadedMapImg = true;
         });
     };
 
-    async function loadImages() {
-        const paths = [
-            'resources/map_NW.jpg',
-            'resources/map_NE.jpg',
-            'resources/map_SW.jpg',
-            'resources/map_SE.jpg'
-        ];
-        try {
-            const promises = paths.map(path => loadImg(path));
-            const imgs = await Promise.all(promises);
-            [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
-        } catch (error) {
-            console.error("Error loading images:", error);
-            mapImgs = {};
-        }
-    }
+    // async function loadImages() {
+    //     const paths = [
+    //         'resources/map_NW.jpg',
+    //         'resources/map_NE.jpg',
+    //         'resources/map_SW.jpg',
+    //         'resources/map_SE.jpg'
+    //     ];
+    //     try {
+    //         const promises = paths.map(path => loadImg(path));
+    //         const imgs = await Promise.all(promises);
+    //         [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+    //     } catch (error) {
+    //         console.error("Error loading images:", error);
+    //         mapImgs = {};
+    //     }
+    // }
 
     _p5.draw = function () {
         background(255);
@@ -206,30 +211,34 @@ var HypoTrack = (function () {
             image(img, dx, dy, dw, dh, sx, sy, sw, sh);
         };
 
-        if (west < 0) {
-            if (north > 0)
-                drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
-        }
-        if (east > 0) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
-        }
-        if (east > 180) {
-            if (north > 0)
-                drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
-        }
-        if (east > 360) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
-        }
+        // if(west < 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
+        // }
+        // if(east > 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
+        // }
+        // if(east > 180){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
+        // }
+        // if(east > 360){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
+        // }
+
+        drawSection(mapImgs.regular, -180, 180, 90, -90, west, min(east, 180), north, south);
+        if(east > 180)
+            drawSection(mapImgs.regular, 180, 540, 90, -90, 180, east, north, south);
     }
 
     // Database //
