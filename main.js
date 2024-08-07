@@ -101,8 +101,8 @@ var HypoTrack = (function () {
                         let coords = longLatToScreenCoords(d);
                         const worldWidth = WIDTH * zoomMult();
                         if (j < tracks[i].length - 1) {
-                            d1 = tracks[i][j + 1];
-                            coords1 = longLatToScreenCoords(d1);
+                            let d1 = tracks[i][j + 1];
+                            let coords1 = longLatToScreenCoords(d1);
                             if (/* coords.inBounds || coords1.inBounds */ true) {
                                 noFill();
                                 if (selectedTrack === tracks[i] && !hideNonSelectedTracks)
