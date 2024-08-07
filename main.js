@@ -314,8 +314,7 @@ var HypoTrack = (function () {
             let mx = mouseX;
             let my = mouseY - (HEIGHT - viewerH);
             panLocation.long += dw * mx / viewerW;
-            let mvh = mapViewHeight();
-            panLocation.lat = beginPanY + mvh * dy / viewerH;
+            //panLocation.lat = beginPanY + mvh * dy / viewerH;
             if (panLocation.long < -180)
                 panLocation.long = 180 - (180 - panLocation.long) % 360;
             if (panLocation.long >= 180)
