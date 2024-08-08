@@ -305,6 +305,82 @@ var HypoTrack = (function () {
         return { save, load, list, delete: delete_ };
     })();
 
+    // Undo/Redo History //
+
+    const History = (() => {
+        let undoItems = [];
+        let redoItems = [];
+
+        const ActionTypes = {
+            addPoint: 0,
+            movePoint: 1,
+            modifyPoint: 2,
+            deletePoint: 3
+        };
+
+        function undo () {
+            if (canUndo()) {
+                const action = undoItems.pop();
+                const t = action.actionType;
+
+                if (t === ActionTypes.addPoint) {
+
+                } else if (t === ActionTypes.movePoint) {
+
+                } else if (t === ActionTypes.modifyPoint) {
+
+                } else if (t === ActionTypes.deletePoint) {
+
+                }
+
+                redoItems.push(action);
+                refreshGUI();
+            }
+        }
+
+        function redo () {
+            if (canRedo()) {
+                const action = redoItems.pop();
+                const t = action.actionType;
+
+                if (t === ActionTypes.addPoint) {
+
+                } else if (t === ActionTypes.movePoint) {
+
+                } else if (t === ActionTypes.modifyPoint) {
+
+                } else if (t === ActionTypes.deletePoint) {
+                    
+                }
+
+                undoItems.push(action);
+                refreshGUI();
+            }
+        }
+
+        function record (actionType, data) {
+            undoItems.push({actionType, data});
+            redoItems = [];
+            refreshGUI();
+        }
+
+        function reset () {
+            undoItems = [];
+            redoItems = [];
+            refreshGUI();
+        }
+
+        function canUndo () {
+            return undoItems.length > 0;
+        }
+
+        function canRedo () {
+            return redoItems.length > 0;
+        }
+
+        return { undo, redo, record, reset, ActionTypes, canUndo, canRedo };
+    })();
+
     // Mouse UI //
 
     _p5.mouseWheel = function (evt) {
