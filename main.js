@@ -334,7 +334,6 @@ var HypoTrack = (function () {
                 }
 
                 redoItems.push(action);
-                refreshGUI();
             }
         }
 
@@ -354,20 +353,17 @@ var HypoTrack = (function () {
                 }
 
                 undoItems.push(action);
-                refreshGUI();
             }
         }
 
         function record (actionType, data) {
             undoItems.push({actionType, data});
             redoItems = [];
-            refreshGUI();
         }
 
         function reset () {
             undoItems = [];
             redoItems = [];
-            refreshGUI();
         }
 
         function canUndo () {
@@ -651,6 +647,21 @@ var HypoTrack = (function () {
             return t;
         }
 
+        // Undo/Redo //
+        let undoredo = div(uicontainer);
+
+        let undoButton = button('Undo', undoredo);
+        undoButton.onclick = function () {
+            History.undo();
+            refreshGUI();
+        };
+
+        let redoButton = button('Redo', undoredo);
+        redoButton.onclick = function () {
+            History.redo();
+            refreshGUI();
+        };
+
         // Dropdowns div //
         let dropdowns = div(uicontainer);
 
@@ -768,6 +779,8 @@ var HypoTrack = (function () {
         };
 
         refreshGUI = function () {
+            undoButton.disabled = !History.canUndo();
+            redoButton.disabled = !History.canRedo();
             for (let k in categorySelectData) {
                 if (categorySelectData[k] === categoryToPlace)
                     categorySelect.value = k;
@@ -815,6 +828,13 @@ var HypoTrack = (function () {
             useAltColors = !useAltColors;
         else if (k === 'a')
             autosave = !autosave;
+        else if (k === 'z' && keyIsDown(CONTROL)) {
+            if (keyIsDown(SHIFT))
+                History.redo();
+            else
+                History.undo();
+        } else if (k === 'y' && keyIsDown(CONTROL))
+            History.redo();
         else return;
         refreshGUI();
         return false;
