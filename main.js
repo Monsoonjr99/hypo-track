@@ -327,7 +327,16 @@ var HypoTrack = (function () {
                 const d = action.data;
 
                 if (t === ActionTypes.addPoint) {
-
+                    const track = tracks[d.trackIndex];
+                    const point = track[d.pointIndex];
+                    track.splice(d.pointIndex, 1);
+                    if(point === selectedDot && track.length > 0)
+                        selectedDot = track[track.length - 1];
+                    if (track.length < 1) {
+                        tracks.splice(d.trackIndex, 1);
+                        if (track === selectedTrack)
+                            deselectTrack();
+                    }
                 } else if (t === ActionTypes.movePoint) {
                     const point = tracks[d.trackIndex][d.pointIndex];
                     point.long = d.long0;
@@ -352,7 +361,14 @@ var HypoTrack = (function () {
                 const d = action.data;
 
                 if (t === ActionTypes.addPoint) {
-
+                    let track;
+                    if (d.newTrack) {
+                        track = [];
+                        tracks.push(track);
+                    } else
+                        track = tracks[d.trackIndex];
+                    const point = new TrackPoint(d.long, d.lat, d.cat, d.type);
+                    track.splice(d.pointIndex, 0, point);
                 } else if (t === ActionTypes.movePoint) {
                     const point = tracks[d.trackIndex][d.pointIndex];
                     point.long = d.long1;
@@ -452,13 +468,19 @@ var HypoTrack = (function () {
                         selectedTrack = [];
                         tracks.push(selectedTrack);
                     } else {
-                        for (let i = 0; i < selectedTrack.length; i++) {
-                            if (selectedTrack[i] === selectedDot)
-                                insertIndex = i + 1;
-                        }
+                        insertIndex = selectedTrack.indexOf(selectedDot) + 1;
                     }
                     selectedDot = new TrackPoint(mouseLong(), mouseLat(), categoryToPlace, typeToPlace);
                     selectedTrack.splice(insertIndex, 0, selectedDot);
+                    History.record(History.ActionTypes.addPoint, {
+                        trackIndex: tracks.indexOf(selectedTrack),
+                        pointIndex: insertIndex,
+                        long: selectedDot.long,
+                        lat: selectedDot.lat,
+                        cat: selectedDot.cat,
+                        type: selectedDot.type,
+                        newTrack: selectedTrack.length === 1
+                    });
                     if (autosave)
                         Database.save();
                 }
