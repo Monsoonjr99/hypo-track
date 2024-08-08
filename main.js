@@ -610,10 +610,7 @@ var HypoTrack = (function () {
 
         let deselectButton = button('Deselect Track', buttons);
         deselectButton.onclick = function () {
-            selectedTrack = undefined;
-            selectedDot = undefined;
-            if (hideNonSelectedTracks)
-                hideNonSelectedTracks = false;
+            deselectTrack();
             refreshGUI();
         };
 
@@ -724,46 +721,35 @@ var HypoTrack = (function () {
         if (suppresskeybinds)
             return;
 
-        if (key === 'd')
-            categoryToPlace = 0;
-        else if (key === 's')
-            categoryToPlace = 1;
-        else if (key === '1')
-            categoryToPlace = 2;
-        else if (key === '2')
-            categoryToPlace = 3;
-        else if (key === '3')
-            categoryToPlace = 4;
-        else if (key === '4')
-            categoryToPlace = 5;
-        else if (key === '5')
-            categoryToPlace = 6;
-        else if (key === 'u')
-            categoryToPlace = 7;
-        else if (key === 't')
-            typeToPlace = 0;
-        else if (key === 'b')
-            typeToPlace = 1;
-        else if (key === 'x')
-            typeToPlace = 2;
-        else if (key === ' ') {
-            selectedTrack = undefined;
-            selectedDot = undefined;
-            if (hideNonSelectedTracks)
-                hideNonSelectedTracks = false;
-        } else if (key === 'h') {
-            if (selectedTrack)
-                hideNonSelectedTracks = !hideNonSelectedTracks;
-        } else if (key === 'q')
+        const k = key.toLowerCase();
+        const categoryKeys = ['d', 's', '1', '2', '3', '4', '5', 'u'];
+        const typeKeys = ['t', 'b', 'x'];
+
+        if(categoryKeys.includes(k))
+            categoryToPlace = categoryKeys.indexOf(k);
+        else if (typeKeys.includes(k))
+            typeToPlace = typeKeys.indexOf(k);
+        else if (k === ' ')
+            deselectTrack();
+        else if (k === 'h' && selectedTrack)
+            hideNonSelectedTracks = !hideNonSelectedTracks;
+        else if (k === 'q')
             deleteTrackPoints = !deleteTrackPoints;
-        else if (key === 'l')
+        else if (k === 'l')
             useAltColors = !useAltColors;
-        else if (key === 'a')
+        else if (k === 'a')
             autosave = !autosave;
         else return;
         refreshGUI();
         return false;
     };
+
+    function deselectTrack () {
+        selectedTrack = undefined;
+        selectedDot = undefined;
+        if (hideNonSelectedTracks)
+            hideNonSelectedTracks = false;
+    }
 
     Object.assign(window, _p5);
 
