@@ -16,6 +16,8 @@ var HypoTrack = (function () {
         beginClickY,
         beginPanX,
         beginPanY,
+        beginPointMoveLong,
+        beginPointMoveLat,
         mouseMode,
         tracks,
         categoryToPlace,
@@ -322,11 +324,14 @@ var HypoTrack = (function () {
             if (canUndo()) {
                 const action = undoItems.pop();
                 const t = action.actionType;
+                const d = action.data;
 
                 if (t === ActionTypes.addPoint) {
 
                 } else if (t === ActionTypes.movePoint) {
-
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.long = d.long0;
+                    point.lat = d.lat0;
                 } else if (t === ActionTypes.modifyPoint) {
 
                 } else if (t === ActionTypes.deletePoint) {
@@ -334,6 +339,9 @@ var HypoTrack = (function () {
                 }
 
                 redoItems.push(action);
+
+                if (autosave)
+                    Database.save();
             }
         }
 
@@ -341,11 +349,14 @@ var HypoTrack = (function () {
             if (canRedo()) {
                 const action = redoItems.pop();
                 const t = action.actionType;
+                const d = action.data;
 
                 if (t === ActionTypes.addPoint) {
 
                 } else if (t === ActionTypes.movePoint) {
-
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.long = d.long1;
+                    point.lat = d.lat1;
                 } else if (t === ActionTypes.modifyPoint) {
 
                 } else if (t === ActionTypes.deletePoint) {
@@ -353,6 +364,9 @@ var HypoTrack = (function () {
                 }
 
                 undoItems.push(action);
+
+                if (autosave)
+                    Database.save();
             }
         }
 
@@ -415,9 +429,11 @@ var HypoTrack = (function () {
                 mouseMode = 0;
             else if (deleteTrackPoints)
                 mouseMode = 3;
-            else if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot)
+            else if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot) {
                 mouseMode = 2;
-            else
+                beginPointMoveLong = selectedDot.long;
+                beginPointMoveLat = selectedDot.lat;
+            } else
                 mouseMode = 0;
         }
     };
@@ -449,6 +465,16 @@ var HypoTrack = (function () {
             } else if (mouseMode === 2) {
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
+                let trackIndex = tracks.indexOf(selectedTrack);
+                History.record(History.ActionTypes.movePoint, {
+                    trackIndex,
+                    pointIndex: tracks[trackIndex].indexOf(selectedDot),
+                    long0: beginPointMoveLong,
+                    lat0: beginPointMoveLat,
+                    long1: selectedDot.long,
+                    lat1: selectedDot.lat
+                });
+                beginPointMoveLong = beginPointMoveLat = undefined;
                 if (autosave)
                     Database.save();
             } else if (mouseMode === 3) {
@@ -738,6 +764,7 @@ var HypoTrack = (function () {
         newSeasonButton.onclick = function () {
             tracks = [];
             saveName = undefined;
+            History.reset();
             refreshGUI();
         };
 
@@ -770,10 +797,8 @@ var HypoTrack = (function () {
             if (loadDropdown.value) {
                 saveName = loadDropdown.value;
                 Database.load();
-                selectedTrack = undefined;
-                selectedDot = undefined;
-                if (hideNonSelectedTracks)
-                    hideNonSelectedTracks = false;
+                deselectTrack();
+                History.reset();
                 refreshGUI();
             }
         };
