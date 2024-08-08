@@ -58,27 +58,32 @@ var HypoTrack = (function () {
 
         mapImgs = {};
 
-        loadImages().then(() => {
+        // loadImages().then(() => {
+        //     loadedMapImg = true;
+        // });
+
+        loadImg('resources/map_regular.jpg').then(img => {
+            mapImgs.regular = img;
             loadedMapImg = true;
         });
     };
 
-    async function loadImages() {
-        const paths = [
-            'resources/map_NW.jpg',
-            'resources/map_NE.jpg',
-            'resources/map_SW.jpg',
-            'resources/map_SE.jpg'
-        ];
-        try {
-            const promises = paths.map(path => loadImg(path));
-            const imgs = await Promise.all(promises);
-            [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
-        } catch (error) {
-            console.error("Error loading images:", error);
-            mapImgs = {};
-        }
-    }
+    // async function loadImages() {
+    //     const paths = [
+    //         'resources/map_NW.jpg',
+    //         'resources/map_NE.jpg',
+    //         'resources/map_SW.jpg',
+    //         'resources/map_SE.jpg'
+    //     ];
+    //     try {
+    //         const promises = paths.map(path => loadImg(path));
+    //         const imgs = await Promise.all(promises);
+    //         [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+    //     } catch (error) {
+    //         console.error("Error loading images:", error);
+    //         mapImgs = {};
+    //     }
+    // }
 
     _p5.draw = function () {
         background(255);
@@ -96,8 +101,8 @@ var HypoTrack = (function () {
                         let coords = longLatToScreenCoords(d);
                         const worldWidth = WIDTH * zoomMult();
                         if (j < tracks[i].length - 1) {
-                            d1 = tracks[i][j + 1];
-                            coords1 = longLatToScreenCoords(d1);
+                            let d1 = tracks[i][j + 1];
+                            let coords1 = longLatToScreenCoords(d1);
                             if (/* coords.inBounds || coords1.inBounds */ true) {
                                 noFill();
                                 if (selectedTrack === tracks[i] && !hideNonSelectedTracks)
@@ -206,30 +211,34 @@ var HypoTrack = (function () {
             image(img, dx, dy, dw, dh, sx, sy, sw, sh);
         };
 
-        if (west < 0) {
-            if (north > 0)
-                drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
-        }
-        if (east > 0) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
-        }
-        if (east > 180) {
-            if (north > 0)
-                drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
-        }
-        if (east > 360) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
-        }
+        // if(west < 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
+        // }
+        // if(east > 0){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
+        // }
+        // if(east > 180){
+        //     if(north > 0)
+        //         drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
+        // }
+        // if(east > 360){
+        //     if(north > 0)
+        //         drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
+        //     if(south < 0)
+        //         drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
+        // }
+
+        drawSection(mapImgs.regular, -180, 180, 90, -90, west, min(east, 180), north, south);
+        if (east > 180)
+            drawSection(mapImgs.regular, 180, 540, 90, -90, 180, east, north, south);
     }
 
     // Database //
@@ -314,7 +323,7 @@ var HypoTrack = (function () {
             let mx = mouseX;
             let my = mouseY - (HEIGHT - viewerH);
             panLocation.long += dw * mx / viewerW;
-            //panLocation.lat = beginPanY + mvh * dy / viewerH;
+            panLocation.lat -= dh * my / viewerH;
             if (panLocation.long < -180)
                 panLocation.long = 180 - (180 - panLocation.long) % 360;
             if (panLocation.long >= 180)
@@ -601,10 +610,7 @@ var HypoTrack = (function () {
 
         let deselectButton = button('Deselect Track', buttons);
         deselectButton.onclick = function () {
-            selectedTrack = undefined;
-            selectedDot = undefined;
-            if (hideNonSelectedTracks)
-                hideNonSelectedTracks = false;
+            deselectTrack();
             refreshGUI();
         };
 
@@ -715,46 +721,35 @@ var HypoTrack = (function () {
         if (suppresskeybinds)
             return;
 
-        if (key === 'd')
-            categoryToPlace = 0;
-        else if (key === 's')
-            categoryToPlace = 1;
-        else if (key === '1')
-            categoryToPlace = 2;
-        else if (key === '2')
-            categoryToPlace = 3;
-        else if (key === '3')
-            categoryToPlace = 4;
-        else if (key === '4')
-            categoryToPlace = 5;
-        else if (key === '5')
-            categoryToPlace = 6;
-        else if (key === 'u')
-            categoryToPlace = 7;
-        else if (key === 't')
-            typeToPlace = 0;
-        else if (key === 'b')
-            typeToPlace = 1;
-        else if (key === 'x')
-            typeToPlace = 2;
-        else if (key === ' ') {
-            selectedTrack = undefined;
-            selectedDot = undefined;
-            if (hideNonSelectedTracks)
-                hideNonSelectedTracks = false;
-        } else if (key === 'h') {
-            if (selectedTrack)
-                hideNonSelectedTracks = !hideNonSelectedTracks;
-        } else if (key === 'q')
+        const k = key.toLowerCase();
+        const categoryKeys = ['d', 's', '1', '2', '3', '4', '5', 'u'];
+        const typeKeys = ['t', 'b', 'x'];
+
+        if (categoryKeys.includes(k))
+            categoryToPlace = categoryKeys.indexOf(k);
+        else if (typeKeys.includes(k))
+            typeToPlace = typeKeys.indexOf(k);
+        else if (k === ' ')
+            deselectTrack();
+        else if (k === 'h' && selectedTrack)
+            hideNonSelectedTracks = !hideNonSelectedTracks;
+        else if (k === 'q')
             deleteTrackPoints = !deleteTrackPoints;
-        else if (key === 'l')
+        else if (k === 'l')
             useAltColors = !useAltColors;
-        else if (key === 'a')
+        else if (k === 'a')
             autosave = !autosave;
         else return;
         refreshGUI();
         return false;
     };
+
+    function deselectTrack() {
+        selectedTrack = undefined;
+        selectedDot = undefined;
+        if (hideNonSelectedTracks)
+            hideNonSelectedTracks = false;
+    }
 
     Object.assign(window, _p5);
 
