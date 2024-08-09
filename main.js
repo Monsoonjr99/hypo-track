@@ -10,6 +10,7 @@ var HypoTrack = (function () {
 
     let loadedMapImg,
         mapImgs,
+        mapBuffer,
         panLocation,
         zoomAmt,
         beginClickX,
@@ -44,6 +45,7 @@ var HypoTrack = (function () {
 
         let canvas = createCanvas(WIDTH, HEIGHT);
         canvas.parent('canvas-container');
+        mapBuffer = createGraphics(WIDTH, HEIGHT);
 
         zoomAmt = 0;
         panLocation = {
@@ -67,6 +69,7 @@ var HypoTrack = (function () {
         loadImg('resources/map_regular.jpg').then(img=>{
             mapImgs.regular = img;
             loadedMapImg = true;
+            updateMapBuffer();
         });
     };
 
@@ -92,8 +95,8 @@ var HypoTrack = (function () {
         fill(0);
         noStroke();
         if (loadedMapImg) {
-            // image(mapImg,0,HEIGHT-WIDTH/2,WIDTH,WIDTH/2,panLocation.x,panLocation.y,mapViewWidth(),mapViewHeight());
-            drawMap();
+            image(mapBuffer, 0, 0);
+            // drawMap();
             let dotSize = 2 * pow(1.25, zoomAmt);
             strokeWeight(dotSize / 9);
             for (let i = 0; i < tracks.length; i++) {
@@ -191,7 +194,9 @@ var HypoTrack = (function () {
         }
     };
 
-    function drawMap() {
+    function updateMapBuffer() {
+        mapBuffer.clear();
+
         const topBound = HEIGHT - WIDTH / 2;
         const mvw = mapViewWidth();
         const mvh = mapViewHeight();
@@ -210,7 +215,7 @@ var HypoTrack = (function () {
             let dy = map(qn, north, south, topBound, HEIGHT);
             let dw = map(qe, qw, west + mvw, 0, WIDTH - dx);
             let dh = map(qs, qn, south, 0, HEIGHT - dy);
-            image(img, dx, dy, dw, dh, sx, sy, sw, sh);
+            mapBuffer.image(img, dx, dy, dw, dh, sx, sy, sw, sh);
         };
 
         // if(west < 0){
@@ -462,6 +467,8 @@ var HypoTrack = (function () {
                 panLocation.lat = 90;
             if (panLocation.lat - nh < -90)
                 panLocation.lat = -90 + nh;
+
+            updateMapBuffer();
         }
     };
 
@@ -608,6 +615,8 @@ var HypoTrack = (function () {
                     panLocation.lat = 90;
                 if (panLocation.lat - mvh < -90)
                     panLocation.lat = -90 + mvh;
+
+                updateMapBuffer();
             }
             return false;
         }
