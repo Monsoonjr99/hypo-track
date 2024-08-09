@@ -1,6 +1,6 @@
 var HypoTrack = (function () {
     const TITLE = 'HypoTrack';
-    const VERSION = '0.1.1';
+    const VERSION = '0.2';
     const IDB_KEY = 'hypo-track';
 
     const WIDTH = 1000;
@@ -10,12 +10,15 @@ var HypoTrack = (function () {
 
     let loadedMapImg,
         mapImgs,
+        mapBuffer,
         panLocation,
         zoomAmt,
         beginClickX,
         beginClickY,
         beginPanX,
         beginPanY,
+        beginPointMoveLong,
+        beginPointMoveLat,
         mouseMode,
         tracks,
         categoryToPlace,
@@ -42,6 +45,7 @@ var HypoTrack = (function () {
 
         let canvas = createCanvas(WIDTH, HEIGHT);
         canvas.parent('canvas-container');
+        mapBuffer = createGraphics(WIDTH, HEIGHT);
 
         zoomAmt = 0;
         panLocation = {
@@ -60,6 +64,7 @@ var HypoTrack = (function () {
 
         loadImages().then(() => {
             loadedMapImg = true;
+            updateMapBuffer();
         });
 
         //loadImg('resources/map_regular.jpg').then(img => {
@@ -90,8 +95,8 @@ var HypoTrack = (function () {
         fill(0);
         noStroke();
         if (loadedMapImg) {
-            // image(mapImg,0,HEIGHT-WIDTH/2,WIDTH,WIDTH/2,panLocation.x,panLocation.y,mapViewWidth(),mapViewHeight());
-            drawMap();
+            image(mapBuffer, 0, 0);
+            // drawMap();
             let dotSize = 2 * pow(1.25, zoomAmt);
             strokeWeight(dotSize / 9);
             for (let i = 0; i < tracks.length; i++) {
@@ -189,7 +194,9 @@ var HypoTrack = (function () {
         }
     };
 
-    function drawMap() {
+    function updateMapBuffer() {
+        mapBuffer.clear();
+
         const topBound = HEIGHT - WIDTH / 2;
         const mvw = mapViewWidth();
         const mvh = mapViewHeight();
@@ -208,7 +215,7 @@ var HypoTrack = (function () {
             let dy = map(qn, north, south, topBound, HEIGHT);
             let dw = map(qe, qw, west + mvw, 0, WIDTH - dx);
             let dh = map(qs, qn, south, 0, HEIGHT - dy);
-            image(img, dx, dy, dw, dh, sx, sy, sw, sh);
+            mapBuffer.image(img, dx, dy, dw, dh, sx, sy, sw, sh);
         };
 
         if (west < 0) {
@@ -301,6 +308,134 @@ var HypoTrack = (function () {
         return { save, load, list, delete: delete_ };
     })();
 
+    // Undo/Redo History //
+
+    const History = (() => {
+        let undoItems = [];
+        let redoItems = [];
+
+        const ActionTypes = {
+            addPoint: 0,
+            movePoint: 1,
+            modifyPoint: 2,
+            deletePoint: 3
+        };
+
+        function undo() {
+            if (canUndo()) {
+                const action = undoItems.pop();
+                const t = action.actionType;
+                const d = action.data;
+
+                if (t === ActionTypes.addPoint) {
+                    const track = tracks[d.trackIndex];
+                    const point = track[d.pointIndex];
+                    track.splice(d.pointIndex, 1);
+                    if (point === selectedDot && track.length > 0)
+                        selectedDot = track[track.length - 1];
+                    if (track.length < 1) {
+                        tracks.splice(d.trackIndex, 1);
+                        if (track === selectedTrack)
+                            deselectTrack();
+                    }
+                } else if (t === ActionTypes.movePoint) {
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.long = d.long0;
+                    point.lat = d.lat0;
+                } else if (t === ActionTypes.modifyPoint) {
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.cat = d.oldCat;
+                    point.type = d.oldType;
+                } else if (t === ActionTypes.deletePoint) {
+                    let track;
+                    if (d.trackDeleted) {
+                        track = [];
+                        tracks.splice(d.trackIndex, 0, track);
+                    } else
+                        track = tracks[d.trackIndex];
+                    const point = new TrackPoint(d.long, d.lat, d.cat, d.type);
+                    track.splice(d.pointIndex, 0, point);
+                }
+
+                redoItems.push(action);
+
+                if (autosave) {
+                    if (tracks.length === 0)
+                        Database.delete();
+                    else
+                        Database.save();
+                }
+            }
+        }
+
+        function redo() {
+            if (canRedo()) {
+                const action = redoItems.pop();
+                const t = action.actionType;
+                const d = action.data;
+
+                if (t === ActionTypes.addPoint) {
+                    let track;
+                    if (d.newTrack) {
+                        track = [];
+                        tracks.push(track);
+                    } else
+                        track = tracks[d.trackIndex];
+                    const point = new TrackPoint(d.long, d.lat, d.cat, d.type);
+                    track.splice(d.pointIndex, 0, point);
+                } else if (t === ActionTypes.movePoint) {
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.long = d.long1;
+                    point.lat = d.lat1;
+                } else if (t === ActionTypes.modifyPoint) {
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.cat = d.newCat;
+                    point.type = d.newType;
+                } else if (t === ActionTypes.deletePoint) {
+                    const track = tracks[d.trackIndex];
+                    const point = track[d.pointIndex];
+                    track.splice(d.pointIndex, 1);
+                    if (point === selectedDot && track.length > 0)
+                        selectedDot = track[track.length - 1];
+                    if (track.length < 1) {
+                        tracks.splice(d.trackIndex, 1);
+                        if (track === selectedTrack)
+                            deselectTrack();
+                    }
+                }
+
+                undoItems.push(action);
+
+                if (autosave) {
+                    if (tracks.length === 0)
+                        Database.delete();
+                    else
+                        Database.save();
+                }
+            }
+        }
+
+        function record(actionType, data) {
+            undoItems.push({ actionType, data });
+            redoItems = [];
+        }
+
+        function reset() {
+            undoItems = [];
+            redoItems = [];
+        }
+
+        function canUndo() {
+            return undoItems.length > 0;
+        }
+
+        function canRedo() {
+            return redoItems.length > 0;
+        }
+
+        return { undo, redo, record, reset, ActionTypes, canUndo, canRedo };
+    })();
+
     // Mouse UI //
 
     _p5.mouseWheel = function (evt) {
@@ -328,6 +463,8 @@ var HypoTrack = (function () {
                 panLocation.lat = 90;
             if (panLocation.lat - nh < -90)
                 panLocation.lat = -90 + nh;
+
+            updateMapBuffer();
         }
     };
 
@@ -339,9 +476,11 @@ var HypoTrack = (function () {
                 mouseMode = 0;
             else if (deleteTrackPoints)
                 mouseMode = 3;
-            else if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot)
+            else if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot) {
                 mouseMode = 2;
-            else
+                beginPointMoveLong = selectedDot.long;
+                beginPointMoveLat = selectedDot.lat;
+            } else
                 mouseMode = 0;
         }
     };
@@ -360,19 +499,35 @@ var HypoTrack = (function () {
                         selectedTrack = [];
                         tracks.push(selectedTrack);
                     } else {
-                        for (let i = 0; i < selectedTrack.length; i++) {
-                            if (selectedTrack[i] === selectedDot)
-                                insertIndex = i + 1;
-                        }
+                        insertIndex = selectedTrack.indexOf(selectedDot) + 1;
                     }
                     selectedDot = new TrackPoint(mouseLong(), mouseLat(), categoryToPlace, typeToPlace);
                     selectedTrack.splice(insertIndex, 0, selectedDot);
+                    History.record(History.ActionTypes.addPoint, {
+                        trackIndex: tracks.indexOf(selectedTrack),
+                        pointIndex: insertIndex,
+                        long: selectedDot.long,
+                        lat: selectedDot.lat,
+                        cat: selectedDot.cat,
+                        type: selectedDot.type,
+                        newTrack: selectedTrack.length === 1
+                    });
                     if (autosave)
                         Database.save();
                 }
             } else if (mouseMode === 2) {
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
+                let trackIndex = tracks.indexOf(selectedTrack);
+                History.record(History.ActionTypes.movePoint, {
+                    trackIndex,
+                    pointIndex: tracks[trackIndex].indexOf(selectedDot),
+                    long0: beginPointMoveLong,
+                    lat0: beginPointMoveLat,
+                    long1: selectedDot.long,
+                    lat1: selectedDot.lat
+                });
+                beginPointMoveLong = beginPointMoveLat = undefined;
                 if (autosave)
                     Database.save();
             } else if (mouseMode === 3) {
@@ -381,18 +536,27 @@ var HypoTrack = (function () {
                         let d = tracks[i][j];
                         let c = longLatToScreenCoords(d);
                         if (c.inBounds && sqrt(sq(c.x - mouseX) + sq(c.y - mouseY)) < pow(1.25, zoomAmt)) {
+                            let trackDeleted = false;
                             tracks[i].splice(j, 1);
                             if (d === selectedDot && tracks[i].length > 0)
                                 selectedDot = tracks[i][tracks[i].length - 1];
                             if (tracks[i].length === 0) {
                                 if (selectedTrack === tracks[i])
-                                    selectedTrack = undefined;
-                                if (selectedDot === d)
-                                    selectedDot = undefined;
+                                    deselectTrack();
                                 tracks.splice(i, 1);
+                                trackDeleted = true;
                             }
                             else
                                 selectedTrack = tracks[i];
+                            History.record(History.ActionTypes.deletePoint, {
+                                trackIndex: i,
+                                pointIndex: j,
+                                long: d.long,
+                                lat: d.lat,
+                                cat: d.cat,
+                                type: d.type,
+                                trackDeleted
+                            });
                             done = true;
                             if (autosave) {
                                 if (tracks.length === 0)
@@ -447,6 +611,8 @@ var HypoTrack = (function () {
                     panLocation.lat = 90;
                 if (panLocation.lat - mvh < -90)
                     panLocation.lat = -90 + mvh;
+
+                updateMapBuffer();
             }
             return false;
         }
@@ -571,6 +737,21 @@ var HypoTrack = (function () {
             return t;
         }
 
+        // Undo/Redo //
+        let undoredo = div(uicontainer);
+
+        let undoButton = button('Undo', undoredo);
+        undoButton.onclick = function () {
+            History.undo();
+            refreshGUI();
+        };
+
+        let redoButton = button('Redo', undoredo);
+        redoButton.onclick = function () {
+            History.redo();
+            refreshGUI();
+        };
+
         // Dropdowns div //
         let dropdowns = div(uicontainer);
 
@@ -613,8 +794,19 @@ var HypoTrack = (function () {
         let modifyTrackPointButton = button('Modify Track Point', buttons);
         modifyTrackPointButton.onclick = function () {
             if (selectedDot) {
+                const oldCat = selectedDot.cat;
+                const oldType = selectedDot.type;
                 selectedDot.cat = categorySelectData[categorySelect.value];
                 selectedDot.type = typeSelectData[typeSelect.value];
+                const trackIndex = tracks.indexOf(selectedTrack);
+                History.record(History.ActionTypes.modifyPoint, {
+                    trackIndex,
+                    pointIndex: tracks[trackIndex].indexOf(selectedDot),
+                    oldCat,
+                    oldType,
+                    newCat: selectedDot.cat,
+                    newType: selectedDot.type
+                });
                 if (autosave)
                     Database.save();
             }
@@ -647,6 +839,7 @@ var HypoTrack = (function () {
         newSeasonButton.onclick = function () {
             tracks = [];
             saveName = undefined;
+            History.reset();
             refreshGUI();
         };
 
@@ -679,15 +872,15 @@ var HypoTrack = (function () {
             if (loadDropdown.value) {
                 saveName = loadDropdown.value;
                 Database.load();
-                selectedTrack = undefined;
-                selectedDot = undefined;
-                if (hideNonSelectedTracks)
-                    hideNonSelectedTracks = false;
+                deselectTrack();
+                History.reset();
                 refreshGUI();
             }
         };
 
         refreshGUI = function () {
+            undoButton.disabled = !History.canUndo();
+            redoButton.disabled = !History.canRedo();
             for (let k in categorySelectData) {
                 if (categorySelectData[k] === categoryToPlace)
                     categorySelect.value = k;
@@ -735,6 +928,13 @@ var HypoTrack = (function () {
             useAltColors = !useAltColors;
         else if (k === 'a')
             autosave = !autosave;
+        else if (k === 'z' && keyIsDown(CONTROL)) {
+            if (keyIsDown(SHIFT))
+                History.redo();
+            else
+                History.undo();
+        } else if (k === 'y' && keyIsDown(CONTROL))
+            History.redo();
         else return;
         refreshGUI();
         return false;
