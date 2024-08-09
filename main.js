@@ -751,6 +751,9 @@ var HypoTrack = (function () {
             History.redo();
             refreshGUI();
         };
+        undoredo.id = "undo-redo";
+        undoButton.classList.add("btn");
+        redoButton.classList.add("btn");
 
         // Dropdowns div //
         let dropdowns = div(uicontainer);
