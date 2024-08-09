@@ -1,5 +1,14 @@
 About: A browser-based tool for creating hypothetical tropical cyclone tracks
 
+v0.2 (2024-08-09):
+    + Added undo/redo feature
+        > Includes ctrl+z keybind for undo and ctrl+y and ctrl+shift+z keybinds for redo
+        > Keybinds only work in Chromium at the moment and may not always work; use buttons if issues present
+    * Shrunk the map image and optimized map rendering for performance
+        > Map is lower resolution when fully zoomed in, but this is now useable in Firefox
+    * Improved GUI style (courtesy of StrawberryMaster)
+    % Upgraded p5.js from 0.8.0 to 1.10.0
+    % Thanks to StrawberryMaster for contributing to this update, including the aforementioned styling plus several tweaks
 v0.1.1 (2024-07-31):
     * Updated alternate color setting with new accessible colors used by Wikipedia
 v0.1 (2024-07-31):
