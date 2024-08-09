@@ -342,15 +342,28 @@ var HypoTrack = (function () {
                     point.long = d.long0;
                     point.lat = d.lat0;
                 } else if (t === ActionTypes.modifyPoint) {
-
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.cat = d.oldCat;
+                    point.type = d.oldType;
                 } else if (t === ActionTypes.deletePoint) {
-
+                    let track;
+                    if (d.trackDeleted) {
+                        track = [];
+                        tracks.splice(d.trackIndex, 0, track);
+                    } else
+                        track = tracks[d.trackIndex];
+                    const point = new TrackPoint(d.long, d.lat, d.cat, d.type);
+                    track.splice(d.pointIndex, 0, point);
                 }
 
                 redoItems.push(action);
 
-                if (autosave)
-                    Database.save();
+                if (autosave) {
+                    if (tracks.length === 0)
+                        Database.delete();
+                    else
+                        Database.save();
+                }
             }
         }
 
@@ -374,15 +387,30 @@ var HypoTrack = (function () {
                     point.long = d.long1;
                     point.lat = d.lat1;
                 } else if (t === ActionTypes.modifyPoint) {
-
+                    const point = tracks[d.trackIndex][d.pointIndex];
+                    point.cat = d.newCat;
+                    point.type = d.newType;
                 } else if (t === ActionTypes.deletePoint) {
-                    
+                    const track = tracks[d.trackIndex];
+                    const point = track[d.pointIndex];
+                    track.splice(d.pointIndex, 1);
+                    if(point === selectedDot && track.length > 0)
+                        selectedDot = track[track.length - 1];
+                    if (track.length < 1) {
+                        tracks.splice(d.trackIndex, 1);
+                        if (track === selectedTrack)
+                            deselectTrack();
+                    }
                 }
 
                 undoItems.push(action);
 
-                if (autosave)
-                    Database.save();
+                if (autosave) {
+                    if (tracks.length === 0)
+                        Database.delete();
+                    else
+                        Database.save();
+                }
             }
         }
 
@@ -505,18 +533,27 @@ var HypoTrack = (function () {
                         let d = tracks[i][j];
                         let c = longLatToScreenCoords(d);
                         if (c.inBounds && sqrt(sq(c.x - mouseX) + sq(c.y - mouseY)) < pow(1.25, zoomAmt)) {
+                            let trackDeleted = false;
                             tracks[i].splice(j, 1);
                             if (d === selectedDot && tracks[i].length > 0)
                                 selectedDot = tracks[i][tracks[i].length - 1];
                             if (tracks[i].length === 0) {
                                 if (selectedTrack === tracks[i])
-                                    selectedTrack = undefined;
-                                if (selectedDot === d)
-                                    selectedDot = undefined;
+                                    deselectTrack();
                                 tracks.splice(i, 1);
+                                trackDeleted = true;
                             }
                             else
                                 selectedTrack = tracks[i];
+                            History.record(History.ActionTypes.deletePoint, {
+                                trackIndex: i,
+                                pointIndex: j,
+                                long: d.long,
+                                lat: d.lat,
+                                cat: d.cat,
+                                type: d.type,
+                                trackDeleted
+                            });
                             done = true;
                             if (autosave) {
                                 if (tracks.length === 0)
@@ -752,8 +789,19 @@ var HypoTrack = (function () {
         let modifyTrackPointButton = button('Modify Track Point', buttons);
         modifyTrackPointButton.onclick = function () {
             if (selectedDot) {
+                const oldCat = selectedDot.cat;
+                const oldType = selectedDot.type;
                 selectedDot.cat = categorySelectData[categorySelect.value];
                 selectedDot.type = typeSelectData[typeSelect.value];
+                const trackIndex = tracks.indexOf(selectedTrack);
+                History.record(History.ActionTypes.modifyPoint, {
+                    trackIndex,
+                    pointIndex: tracks[trackIndex].indexOf(selectedDot),
+                    oldCat,
+                    oldType,
+                    newCat: selectedDot.cat,
+                    newType: selectedDot.type
+                });
                 if (autosave)
                     Database.save();
             }
