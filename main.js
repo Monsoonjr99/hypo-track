@@ -1,6 +1,6 @@
 var HypoTrack = (function () {
     const TITLE = 'HypoTrack';
-    const VERSION = '0.2';
+    const VERSION = '0.2.1';
     const IDB_KEY = 'hypo-track';
 
     const WIDTH = 1000;
