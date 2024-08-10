@@ -910,7 +910,7 @@ var HypoTrack = (function () {
         refreshGUI();
     };
 
-    _p5.keyTyped = function () {
+    _p5.keyPressed = function () {
         if (suppresskeybinds)
             return;
 
