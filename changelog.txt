@@ -1,5 +1,7 @@
 About: A browser-based tool for creating hypothetical tropical cyclone tracks
 
+v0.2.1 (2024-08-10):
+    * Fixed keybind issues with undo/redo (now works in Firefox!)
 v0.2 (2024-08-09):
     + Added undo/redo feature
         > Includes ctrl+z keybind for undo and ctrl+y and ctrl+shift+z keybinds for redo
