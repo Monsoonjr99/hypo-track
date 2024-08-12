@@ -658,11 +658,41 @@ var HypoTrack = (function () {
     }
 
     class TrackPoint {
-        constructor(long, lat, cat, type) {
+        constructor(long, lat, cat, type, wind, pressure) {
             this.long = long || 0;
             this.lat = lat || 0;
             this.cat = cat || 0;
             this.type = type || 0;
+            if(wind !== undefined)
+                this.wind = wind;
+            if(pressure !== undefined)
+                this.pressure = pressure;
+        }
+
+        get cat() {
+            if (typeof this.wind !== 'number' || this.wind < 0)
+                return 7; // Unknown
+            else if (this.wind < 34)
+                return 0; // Depression
+            else if (this.wind < 64)
+                return 1; // Storm
+            else if (this.wind < 83)
+                return 2; // Cat 1
+            else if (this.wind < 96)
+                return 3; // Cat 2
+            else if (this.wind < 113)
+                return 4; // Cat 3
+            else if (this.wind < 137)
+                return 5; // Cat 4
+            else
+                return 6; // Cat 5
+        }
+
+        set cat(val) {
+            const presetWind = [25, 35, 65, 85, 100, 115, 140, -99];
+            const presetPressure = [1015, 1005, 985, 965, 950, 935, 920, -99];
+            this.wind = presetWind[val] || -99;
+            this.pressure = presetPressure[val] || -99;
         }
     }
 
