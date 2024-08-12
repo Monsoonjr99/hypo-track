@@ -12,10 +12,14 @@ a {
 	font-weight: bold;
 }
 
+select {
+	margin: .15rem .25rem;
+}
+
 #version {
 	position: fixed;
-	bottom: 0px;
-	right: 0px;
+	bottom: 0;
+	right: 0;
 	color: #000080;
 	padding: .4rem;
 	z-index: 100;
@@ -69,6 +73,16 @@ ul li {
 	padding: .75rem;
 	border: .15rem solid #000080;
 	border-radius: .4rem;
+}
+
+#undo-redo {
+	display: flex;
+	justify-content: space-between;
+}
+
+#undo-redo .btn {
+	flex: 1;
+	margin: 0 .5rem;
 }
 
 img {
