@@ -30,6 +30,7 @@ var HypoTrack = (function () {
         hideNonSelectedTracks,
         deleteTrackPoints,
         useAltColors,
+        useSmallDots,
         saveName,
         autosave,
         saveLoadReady;
@@ -57,6 +58,7 @@ var HypoTrack = (function () {
         categoryToPlace = 0;
         typeToPlace = 0;
         useAltColors = false;
+        useSmallDots = false;
         autosave = true;
         saveLoadReady = true;
 
@@ -99,6 +101,8 @@ var HypoTrack = (function () {
             drawMap();
             let dotSize = 2 * pow(1.25, zoomAmt);
             strokeWeight(dotSize / 9);
+            if(useSmallDots)
+                dotSize *= 9/15;
             for (let i = 0; i < tracks.length; i++) {
                 if (!hideNonSelectedTracks || selectedTrack === tracks[i]) {
                     for (let j = 0; j < tracks[i].length; j++) {
@@ -835,6 +839,11 @@ var HypoTrack = (function () {
             useAltColors = altColorCheckbox.checked;
         };
 
+        let smallDotCheckbox = checkbox('small-dot-checkbox', 'Use Small Points (Season Summary)', buttons);
+        smallDotCheckbox.onclick = function () {
+            useSmallDots = smallDotCheckbox.checked;
+        };
+
         let autosaveCheckbox = checkbox('autosave-checkbox', 'Autosave', buttons);
         autosaveCheckbox.onclick = function () {
             autosave = autosaveCheckbox.checked;
@@ -901,6 +910,7 @@ var HypoTrack = (function () {
             deletePointsCheckbox.checked = deleteTrackPoints;
             modifyTrackPointButton.disabled = !selectedDot || !saveLoadReady;
             altColorCheckbox.checked = useAltColors;
+            smallDotCheckbox.checked = useSmallDots;
             autosaveCheckbox.checked = autosave;
             saveButton.disabled = loadDropdown.disabled = newSeasonButton.disabled = !saveLoadReady;
             if (saveName)
@@ -933,6 +943,8 @@ var HypoTrack = (function () {
             deleteTrackPoints = !deleteTrackPoints;
         else if (k === 'l')
             useAltColors = !useAltColors;
+        else if (k === 'p')
+            useSmallDots = !useSmallDots;
         else if (k === 'a')
             autosave = !autosave;
         else if (k === 'z' && keyIsDown(CONTROL)) {
