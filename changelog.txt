@@ -1,5 +1,9 @@
 About: A browser-based tool for creating hypothetical tropical cyclone tracks
 
+v0.2.2 (2024-08-22):
+    + Added option for smaller track point size for season summary maps
+        > Keybind: "p"
+    * Formatting tweaks (Kudos to StrawberryMaster for some of them)
 v0.2.1 (2024-08-10):
     * Fixed keybind issues with undo/redo (now works in Firefox!)
 v0.2 (2024-08-09):
