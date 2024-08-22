@@ -672,7 +672,7 @@ var HypoTrack = (function () {
     let suppresskeybinds = false;
 
     window.onload = function () {
-        let uicontainer = document.querySelector('#ui-container');
+        const uicontainer = document.querySelector('#ui-container');
         // uicontainer.style.left = (WIDTH + 20) + 'px';
 
         function div(appendTo) {
@@ -699,8 +699,10 @@ var HypoTrack = (function () {
             appendTo.appendChild(drop);
             appendTo.appendChild(document.createElement('br'));
 
-            for (let key in data) {
-                dropdownOption(key, drop);
+            for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    dropdownOption(key, drop);
+                }
             }
 
             return drop;
