@@ -57,10 +57,16 @@ ul li {
 	padding: 5px 0;
 }
 
+#canvas-container {
+	float: left;
+	margin-right: .5rem;
+}
+
 #ui-container {
-	position: absolute;
+	/* position: absolute;
 	top: 10px;
-	left: 10px;
+	left: 10px; */
+	display: flow-root;
 	background-color: #FF69B4;
 	border: .15rem solid #000080;
 	padding: 1rem;

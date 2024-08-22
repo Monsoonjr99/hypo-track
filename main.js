@@ -473,6 +473,7 @@ var HypoTrack = (function () {
                 panLocation.lat = -90 + nh;
 
             // updateMapBuffer();
+            return false;
         }
     };
 
@@ -676,7 +677,7 @@ var HypoTrack = (function () {
 
     window.onload = function () {
         let uicontainer = document.querySelector('#ui-container');
-        uicontainer.style.left = (WIDTH + 20) + 'px';
+        // uicontainer.style.left = (WIDTH + 20) + 'px';
 
         function div(appendTo) {
             let d = document.createElement('div');
@@ -851,19 +852,12 @@ var HypoTrack = (function () {
 
         // Save/Load UI //
 
-        let newSeasonButton = button('New Season', div(uicontainer));
-        newSeasonButton.onclick = function () {
-            tracks = [];
-            saveName = undefined;
-            History.reset();
-            refreshGUI();
-        };
-
         let saveloadui = div(uicontainer);
 
         let saveButton = button('Save', saveloadui);
         let saveNameTextbox = textbox('save-name-textbox', 'Season Save Name:', saveloadui);
         let loadDropdown = dropdown('load-season-dropdown', 'Load Season', {}, saveloadui);
+        let newSeasonButton = button('New Season', saveloadui);
 
         async function refreshLoadDropdown() {
             let saveList = await Database.list();
@@ -892,6 +886,14 @@ var HypoTrack = (function () {
                 History.reset();
                 refreshGUI();
             }
+        };
+
+        newSeasonButton.style.marginTop = '1rem';
+        newSeasonButton.onclick = function () {
+            tracks = [];
+            saveName = undefined;
+            History.reset();
+            refreshGUI();
         };
 
         refreshGUI = function () {
