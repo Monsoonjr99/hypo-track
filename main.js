@@ -68,7 +68,7 @@ var HypoTrack = (function () {
         //     loadedMapImg = true;
         // });
 
-        loadImg('resources/map_regular.jpg').then(img=>{
+        loadImg('resources/map_regular.webp').then(img=>{
             mapImgs.regular = img;
             loadedMapImg = true;
             // updateMapBuffer();
@@ -77,10 +77,10 @@ var HypoTrack = (function () {
 
     // async function loadImages() {
     //     const paths = [
-    //         'resources/map_NW.jpg',
-    //         'resources/map_NE.jpg',
-    //         'resources/map_SW.jpg',
-    //         'resources/map_SE.jpg'
+    //         'resources/map_NW.webp',
+    //         'resources/map_NE.webp',
+    //         'resources/map_SW.webp',
+    //         'resources/map_SE.webp'
     //     ];
     //     try {
     //         const promises = paths.map(path => loadImg(path));
