@@ -73,6 +73,18 @@ ul li {
 	border-radius: .2rem .8rem;
 }
 
+@media (max-width: 1225px) {
+
+	/* WIDTH + 225 in main.js */
+	#ui-container {
+		display: inline-flex;
+	}
+
+	#undo-redo {
+		flex-direction: column;
+	}
+}
+
 #ui-container div {
 	margin-bottom: .75rem;
 	background-color: #FFFF00;
