@@ -77,10 +77,10 @@ var HypoTrack = (function () {
 
     async function loadImages() {
         const paths = [
-            'resources/map_hi-res_NW.jpg',
-            'resources/map_hi-res_NE.jpg',
-            'resources/map_hi-res_SW.jpg',
-            'resources/map_hi-res_SE.jpg'
+            'resources/map_hi-res_NW.webp',
+            'resources/map_hi-res_NE.webp',
+            'resources/map_hi-res_SW.webp',
+            'resources/map_hi-res_SE.webp'
         ];
         try {
             const promises = paths.map(path => loadImg(path));
