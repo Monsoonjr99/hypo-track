@@ -20,10 +20,37 @@
 
 <body>
   <div id="canvas-container"></div>
-  <div id="ui-container"></div>
+  <div id="ui-container">
+    <div id="theme-selector-container">
+      <select id="theme-select">
+        <option value="vaporwave">Vaporwave</option>
+        <option value="monsoon">Monsoon</option>
+      </select>
+    </div>
+  </div>
 
   <a id="version"></a>
   <script src="version.js"></script>
+  <script>
+    function applyTheme(theme) {
+      document.body.classList.remove('monsoon-theme');
+      if (theme === 'monsoon') {
+        document.body.classList.add('monsoon-theme');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const savedTheme = localStorage.getItem('theme') || 'vaporwave';
+      document.getElementById('theme-select').value = savedTheme;
+      applyTheme(savedTheme);
+    });
+
+    document.getElementById('theme-select').addEventListener('change', function () {
+      const theme = this.value;
+      localStorage.setItem('theme', theme);
+      applyTheme(theme);
+    });
+  </script>
 </body>
 
 </html>
