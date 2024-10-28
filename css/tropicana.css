@@ -1,0 +1,13 @@
+/* Tropicana theme */
+/* original theme from Arliston @ https://github.com/Arliston/arlistons-hypo-track */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+body[data-theme="tropicana"] {
+	background: #00daff;
+	background: linear-gradient(#00daff, #90f);
+	font-family: "Nunito", "Arial", sans-serif;
+}
+
+body[data-theme="tropicana"] #ui-container {
+	background: #02ff9b;
+}

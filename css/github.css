@@ -1,0 +1,69 @@
+/* Github theme */
+/* original theme from kingnorahrules @ https://github.com/kingnoahrules/hypo-track */
+body[data-theme="github"] {
+    background: #010409;
+    background: linear-gradient(#010409, #11171f);
+    color: rgb(255, 255, 255);
+    font-family: monospace, sans-serif;
+    text-transform: lowercase;
+}
+
+body[data-theme="github"] a#version {
+    color: #cdcdff;
+}
+
+body[data-theme="github"] a#version:hover {
+    text-decoration: underline;
+}
+
+body[data-theme="github"] #ui-container {
+    background: linear-gradient(#11171f, #010409);
+    border: .1rem solid #3D444D;
+    padding: .5rem;
+    border-radius: .1rem;
+}
+
+body[data-theme="github"] #ui-container div {
+    background-color: #11171f;
+    border: none;
+    border-radius: .1rem;
+    margin-bottom: .5rem;
+}
+
+body[data-theme="github"] #version {
+    background-color: #11171f;
+    border: .1rem solid #3D444D;
+    color: #FFF;
+}
+
+body[data-theme="github"] #theme-select {
+    background-color: #11171f;
+    border: .1rem solid #3D444D;
+    color: #fff;
+}
+
+body[data-theme="github"] select,
+body[data-theme="github"] button {
+    border: .1rem solid #3D444D;
+    color: #fff;
+    font-family: monospace;
+    text-transform: lowercase;
+}
+
+body[data-theme="github"] select {
+    background-color: #11171f;
+}
+
+body[data-theme="github"] button,
+body[data-theme="github"] input,
+body[data-theme="github"] #ui-container option {
+    background-color: #1b2129;
+}
+
+body[data-theme="github"] input {
+    border-width: .1rem;
+}
+
+body[data-theme="github"] #ui-container option {
+    color: #fff;
+}
