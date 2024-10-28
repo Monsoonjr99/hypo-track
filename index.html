@@ -5,27 +5,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hypo-Track</title>
-  <meta name="author" content="Monsoonjr99, StrawberryMaster">
+
   <meta name="description" content="Plot your very own cyclone track maps">
   <meta name="keywords"
     content="trackgen, track generator, tropical cyclone, track map, hurricane, typhoon, cyclone, storm, weather, meteorology, data visualization, open source">
+  <meta name="author" content="Monsoonjr99, StrawberryMaster">
   <meta name="theme-color" content="#00b6d5">
-  <meta name="title" content="Hypo-Track">
 
-	<meta property="og:image" content="https://strawberrymaster.github.io/hypo-track/resources/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hypo-Track">
+  <meta property="og:description" content="Plot your very own cyclone track maps">
+  <meta property="og:image" content="https://strawberrymaster.github.io/hypo-track/resources/favicon.png">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"></script>
-  <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
-  <script src="main.js"></script>
-  <link type="text/css" rel="stylesheet" href="style.css" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hypo-Track">
+  <meta name="twitter:description" content="Plot your very own cyclone track maps">
+  <meta name="twitter:image" content="https://strawberrymaster.github.io/hypo-track/resources/favicon.png">
+
   <link rel="icon" type="image/png" href="./resources/favicon.png">
+  <link type="text/css" rel="stylesheet" href="css/style.css" />
+  <link rel="preload" href="js/theme.js" as="script">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js" defer></script>
+  <script src="https://unpkg.com/dexie@latest/dist/dexie.js" defer></script>
+  <script src="js/main.js" defer></script>
 </head>
 
 <body>
   <div id="canvas-container"></div>
-  <div id="ui-container">
-    <div id="theme-selector-container">
-      <select id="theme-select">
+  <div id="ui-container" aria-label="User interface">
+    <div id="theme-selector-container" aria-label="Theme selector">
+      <select id="theme-select" aria-label="Theme select dropdown">
         <option value="vaporwave">Vaporwave</option>
         <option value="monsoon">Monsoon</option>
       </select>
@@ -33,27 +43,8 @@
   </div>
 
   <a id="version"></a>
-  <script src="version.js"></script>
-  <script>
-    function applyTheme(theme) {
-      document.body.classList.remove('monsoon-theme');
-      if (theme === 'monsoon') {
-        document.body.classList.add('monsoon-theme');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const savedTheme = localStorage.getItem('theme') || 'vaporwave';
-      document.getElementById('theme-select').value = savedTheme;
-      applyTheme(savedTheme);
-    });
-
-    document.getElementById('theme-select').addEventListener('change', function () {
-      const theme = this.value;
-      localStorage.setItem('theme', theme);
-      applyTheme(theme);
-    });
-  </script>
+  <script src="js/version.js"></script>
+  <script src="js/theme.js"></script>
 </body>
 
 </html>

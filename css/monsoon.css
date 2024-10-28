@@ -1,0 +1,76 @@
+
+
+/* Monsoon theme */
+body[data-theme="monsoon"] {
+	background: #BBB;
+	background: linear-gradient(#BBB, #F3F3F3);
+	font-family: Verdana, Arial, Calibri;
+}
+
+body[data-theme="monsoon"] a {
+	color: blue;
+	display: inline-block;
+	text-decoration: none;
+}
+
+body[data-theme="monsoon"] #version {
+	bottom: 0px;
+	color: #777;
+	padding: 10px;
+	position: fixed;
+	right: 0px;
+	user-select: none;
+	z-index: 100;
+}
+
+body[data-theme="monsoon"] a {
+	border-bottom: solid 1px black;
+	content: '';
+	display: block;
+	transform: scaleX(0);
+	transition: transform 300ms;
+}
+
+body[data-theme="monsoon"] a:hover,
+body[data-theme="monsoon"] a#version:hover {
+	color: black;
+	transform-origin: 50% 50%;
+}
+
+body[data-theme="monsoon"] a:hover:after {
+	transform: scaleX(1);
+}
+
+body[data-theme="monsoon"] ul {
+	list-style: none;
+	text-align: center;
+}
+
+body[data-theme="monsoon"] #ui-container {
+	background: linear-gradient(#f3f3f3, #bbb);
+	border: .15rem solid #444444;
+	border-radius: .2rem;
+	padding: .5rem;
+}
+
+body[data-theme="monsoon"] #ui-container div {
+	background-color: #fff;
+	border: none;
+	border-radius: .2rem;
+	margin-bottom: .5rem;
+}
+
+body[data-theme="monsoon"] #version {
+	background-color: #fff;
+	border: .15rem solid #444;
+}
+
+body[data-theme="monsoon"] #theme-select {
+	background-color: #fff;
+	border: .15rem solid #444;
+}
+
+body[data-theme="monsoon"] #theme-select option {
+	background-color: #fff;
+	color: #444;
+}
