@@ -24,18 +24,18 @@
 
   <link rel="icon" type="image/png" href="./resources/favicon.png">
   <link type="text/css" rel="stylesheet" href="css/style.css" />
-  <link rel="preload" href="js/theme.js" as="script">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js" defer></script>
-  <script src="https://unpkg.com/dexie@latest/dist/dexie.js" defer></script>
-  <script src="js/main.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"></script>
+  <script src="https://unpkg.com/dexie@latest/dist/dexie.min.js"></script>
+  <script src="js/main.js"></script>
 </head>
 
 <body>
   <div id="canvas-container"></div>
-  <div id="ui-container" aria-label="User interface">
-    <div id="theme-selector-container" aria-label="Theme selector">
-      <select id="theme-select" aria-label="Theme select dropdown">
+  <div id="ui-container">
+    <div id="theme-selector-container">
+      <label id="theme-select-label" for="theme-select">Theme selector</label>
+      <select id="theme-select" aria-labelledby="theme-select-label">
         <option value="vaporwave">Vaporwave</option>
         <option value="github">GitHub</option>
         <option value="monsoon">Monsoon</option>
