@@ -1,10 +1,8 @@
-
-
 /* Monsoon theme */
 body[data-theme="monsoon"] {
 	background: #BBB;
 	background: linear-gradient(#BBB, #F3F3F3);
-	font-family: Verdana, Arial, Calibri;
+	font-family: Verdana, Arial, Calibri, sans-serif;
 }
 
 body[data-theme="monsoon"] a {
@@ -16,11 +14,6 @@ body[data-theme="monsoon"] a {
 body[data-theme="monsoon"] #version {
 	bottom: 0px;
 	color: #777;
-	padding: 10px;
-	position: fixed;
-	right: 0px;
-	user-select: none;
-	z-index: 100;
 }
 
 body[data-theme="monsoon"] a {
