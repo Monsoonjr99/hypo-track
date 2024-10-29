@@ -67,11 +67,12 @@ ul li {
 	top: 10px;
 	left: 10px; */
 	display: flow-root;
+	float: right;
 	background-color: #FF69B4;
 	border: .15rem solid #000080;
 	padding: 1rem;
 	border-radius: .2rem .8rem;
-	min-height: 300px;
+	max-width: 300px;
 }
 
 @media (max-width: 1225px) {
@@ -79,7 +80,7 @@ ul li {
 	/* WIDTH + 225 in main.js */
 	#ui-container {
 		display: inline-flex;
-		min-width: 800px;
+		max-width: 800px;
 	}
 
 	#undo-redo {
