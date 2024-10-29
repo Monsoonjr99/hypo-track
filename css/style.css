@@ -75,7 +75,7 @@ ul li {
 	border: .15rem solid #000080;
 	padding: 1rem;
 	border-radius: .2rem .8rem;
-	max-width: 25dvw;
+	width: fit-content;
 }
 
 @media (max-width: 1225px) {
