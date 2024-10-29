@@ -60,22 +60,16 @@ ul li {
 #canvas-container {
 	float: left;
 	margin-right: .5rem;
-	min-height: 300px;
-	min-width: 70dvw;
 }
 
 #ui-container {
-	/* position: absolute;
-	top: 10px;
-	left: 10px; */
 	display: flex;
     flex-flow: column;
-	float: right;
 	background-color: #FF69B4;
 	border: .15rem solid #000080;
 	padding: 1rem;
 	border-radius: .2rem .8rem;
-	width: fit-content;
+	max-width: 25dvw;
 }
 
 @media (max-width: 1225px) {
