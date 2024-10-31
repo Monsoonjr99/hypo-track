@@ -103,32 +103,61 @@ var HypoTrack = (function () {
             strokeWeight(dotSize / 9);
             if (useSmallDots)
                 dotSize *= 9 / 15;
+
+            const worldWidth = WIDTH * zoomMult();
+
+            // our pool of reusable objects
+            let coordsPool = [];
+            let poolIndex = 0;
+
+            function getCoords() {
+                if (poolIndex >= coordsPool.length) {
+                    coordsPool.push({ x: 0, y: 0, inBounds: false });
+                }
+                return coordsPool[poolIndex++];
+            }
+
+            function longLatToScreenCoordsPooled(d, out) {
+                let long = d.long;
+                let lat = d.lat;
+                out.x = ((long - panLocation.long + 360) % 360) / mapViewWidth() * WIDTH;
+                out.y = (panLocation.lat - lat) / mapViewHeight() * WIDTH / 2 + HEIGHT - WIDTH / 2;
+                out.inBounds = out.x >= 0 && out.x < WIDTH && out.y >= (HEIGHT - WIDTH / 2) && out.y < HEIGHT;
+            }
+
+            hoverTrack = undefined;
+            hoverDot = undefined;
+
+            // first pass: draw tracks and points
             for (let i = 0; i < tracks.length; i++) {
                 if (!hideNonSelectedTracks || selectedTrack === tracks[i]) {
                     for (let j = 0; j < tracks[i].length; j++) {
                         let d = tracks[i][j];
-                        let coords = longLatToScreenCoords(d);
-                        const worldWidth = WIDTH * zoomMult();
+
+                        let coords = getCoords();
+                        longLatToScreenCoordsPooled(d, coords);
+
                         if (j < tracks[i].length - 1) {
                             let d1 = tracks[i][j + 1];
-                            let coords1 = longLatToScreenCoords(d1);
-                            if (/* coords.inBounds || coords1.inBounds */ true) {
-                                noFill();
-                                if (selectedTrack === tracks[i] && !hideNonSelectedTracks)
-                                    stroke('#ffff00');
-                                else
-                                    stroke('#ffffff');
-                                let x0 = coords.x;
-                                let x1 = coords1.x;
-                                if (x1 - x0 > worldWidth / 2)
-                                    x1 -= worldWidth;
-                                else if (x1 - x0 < -worldWidth / 2)
-                                    x1 += worldWidth;
-                                line(x0, coords.y, x1, coords1.y);
-                                line(x0 - worldWidth, coords.y, x1 - worldWidth, coords1.y);
-                                line(x0 + worldWidth, coords.y, x1 + worldWidth, coords1.y);
-                            }
+                            let coords1 = getCoords();
+                            longLatToScreenCoordsPooled(d1, coords1);
+
+                            noFill();
+                            if (selectedTrack === tracks[i] && !hideNonSelectedTracks)
+                                stroke('#ffff00');
+                            else
+                                stroke('#ffffff');
+                            let x0 = coords.x;
+                            let x1 = coords1.x;
+                            if (x1 - x0 > worldWidth / 2)
+                                x1 -= worldWidth;
+                            else if (x1 - x0 < -worldWidth / 2)
+                                x1 += worldWidth;
+                            line(x0, coords.y, x1, coords1.y);
+                            line(x0 - worldWidth, coords.y, x1 - worldWidth, coords1.y);
+                            line(x0 + worldWidth, coords.y, x1 + worldWidth, coords1.y);
                         }
+
                         if (useAltColors)
                             fill(COLORS_ALT[d.cat]);
                         else
@@ -145,37 +174,56 @@ var HypoTrack = (function () {
                             stroke('#ffffff');
                         else
                             noStroke();
+
                         function mark(x) {
-                            if (x >= -dotSize / 2 && x < WIDTH + dotSize / 2 && coords.y >= (HEIGHT - WIDTH / 2) - dotSize / 2 && coords.y < HEIGHT + dotSize / 2) {
+                            if (
+                                x >= -dotSize / 2 &&
+                                x < WIDTH + dotSize / 2 &&
+                                coords.y >= (HEIGHT - WIDTH / 2) - dotSize / 2 &&
+                                coords.y < HEIGHT + dotSize / 2
+                            ) {
                                 if (d.type === 0)
                                     ellipse(x, coords.y, dotSize, dotSize);
                                 else if (d.type === 1)
-                                    rect(x - dotSize * 0.35, coords.y - dotSize * 0.35, dotSize * 0.7, dotSize * 0.7);
+                                    rect(
+                                        x - dotSize * 0.35,
+                                        coords.y - dotSize * 0.35,
+                                        dotSize * 0.7,
+                                        dotSize * 0.7
+                                    );
                                 else if (d.type === 2)
                                     triangle(
                                         x + dotSize / 2.2 * cos(PI / 6),
                                         coords.y + dotSize / 2.2 * sin(PI / 6),
-                                        x + dotSize / 2.2 * cos(5 * PI / 6),
-                                        coords.y + dotSize / 2.2 * sin(5 * PI / 6),
-                                        x + dotSize / 2.2 * cos(3 * PI / 2),
-                                        coords.y + dotSize / 2.2 * sin(3 * PI / 2)
+                                        x + dotSize / 2.2 * cos((5 * PI) / 6),
+                                        coords.y + dotSize / 2.2 * sin((5 * PI) / 6),
+                                        x + dotSize / 2.2 * cos((3 * PI) / 2),
+                                        coords.y + dotSize / 2.2 * sin((3 * PI) / 2)
                                     );
                             }
                         }
+
                         mark(coords.x);
                         mark(coords.x - worldWidth);
                         mark(coords.x + worldWidth);
                     }
                 }
             }
-            hoverTrack = undefined;
-            hoverDot = undefined;
+
+            // reset pool for future reuse
+            poolIndex = 0;
+
+            // second pass: determine hover state
             for (let i = tracks.length - 1; i >= 0; i--) {
                 if (!hideNonSelectedTracks || selectedTrack === tracks[i]) {
                     for (let j = tracks[i].length - 1; j >= 0; j--) {
                         let d = tracks[i][j];
-                        let c = longLatToScreenCoords(d);
-                        if (c.inBounds && sqrt(sq(c.x - mouseX) + sq(c.y - mouseY)) < pow(1.25, zoomAmt)) {
+                        let c = getCoords();
+                        longLatToScreenCoordsPooled(d, c);
+                        if (
+                            c.inBounds &&
+                            sqrt(sq(c.x - mouseX) + sq(c.y - mouseY)) < pow(1.25, zoomAmt)
+                        ) {
                             hoverDot = d;
                             hoverTrack = tracks[i];
                             return;
@@ -183,15 +231,7 @@ var HypoTrack = (function () {
                     }
                 }
             }
-            // fill(255);
-            // noStroke();
-            // rect(0,0,WIDTH,HEIGHT-WIDTH/2);
-            // fill(0);
-            // textAlign(CENTER,CENTER);
-            // textSize(12);
-            // text('TEST',WIDTH/2,(HEIGHT-WIDTH/2)/2);
-        }
-        else {
+        } else {
             textSize(48);
             textAlign(CENTER, CENTER);
             text('Loading...', WIDTH / 2, HEIGHT / 2);
