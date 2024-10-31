@@ -964,39 +964,56 @@ var HypoTrack = (function () {
     };
 
     _p5.keyPressed = function () {
-        if (suppresskeybinds)
-            return;
+        if (suppresskeybinds) return;
 
         const k = key.toLowerCase();
-        const categoryKeys = ['d', 's', '1', '2', '3', '4', '5', 'u'];
-        const typeKeys = ['t', 'b', 'x'];
 
-        if (categoryKeys.includes(k))
-            categoryToPlace = categoryKeys.indexOf(k);
-        else if (typeKeys.includes(k))
-            typeToPlace = typeKeys.indexOf(k);
-        else if (k === ' ')
-            deselectTrack();
-        else if (k === 'h' && selectedTrack)
-            hideNonSelectedTracks = !hideNonSelectedTracks;
-        else if (k === 'q')
-            deleteTrackPoints = !deleteTrackPoints;
-        else if (k === 'l')
-            useAltColors = !useAltColors;
-        else if (k === 'p')
-            useSmallDots = !useSmallDots;
-        else if (k === 'a')
-            autosave = !autosave;
-        else if (k === 'z' && keyIsDown(CONTROL)) {
-            if (keyIsDown(SHIFT))
-                History.redo();
-            else
-                History.undo();
-        } else if (k === 'y' && keyIsDown(CONTROL))
-            History.redo();
-        else return;
-        refreshGUI();
-        return false;
+        const keyActions = {
+            'd': () => categoryToPlace = 0,
+            's': () => categoryToPlace = 1,
+            '1': () => categoryToPlace = 2,
+            '2': () => categoryToPlace = 3,
+            '3': () => categoryToPlace = 4,
+            '4': () => categoryToPlace = 5,
+            '5': () => categoryToPlace = 6,
+            'u': () => categoryToPlace = 7,
+            't': () => typeToPlace = 0,
+            'b': () => typeToPlace = 1,
+            'x': () => typeToPlace = 2,
+            ' ': () => deselectTrack(),
+            'h': () => selectedTrack && (hideNonSelectedTracks = !hideNonSelectedTracks),
+            'q': () => deleteTrackPoints = !deleteTrackPoints,
+            'l': () => useAltColors = !useAltColors,
+            'p': () => useSmallDots = !useSmallDots,
+            'a': () => autosave = !autosave
+        };
+
+        const handleHistoryAction = (isRedo) => {
+            if (keyIsDown(CONTROL)) {
+                isRedo ? History.redo() : History.undo();
+            }
+        };
+
+        if (k === 'z' && keyIsDown(CONTROL)) {
+            handleHistoryAction(keyIsDown(SHIFT));
+            refreshGUI();
+            return false;
+        }
+
+        if (k === 'y' && keyIsDown(CONTROL)) {
+            handleHistoryAction(true);
+            refreshGUI();
+            return false;
+        }
+
+        const action = keyActions[k];
+        if (action) {
+            action();
+            refreshGUI();
+            return false;
+        }
+
+        return true;
     };
 
     function deselectTrack() {
