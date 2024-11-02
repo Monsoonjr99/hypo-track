@@ -694,7 +694,14 @@ var HypoTrack = (function () {
 
     function loadImg(path) {
         return new Promise((resolve, reject) => {
-            loadImage(path, resolve, reject);
+            try {
+                loadImage(path, 
+                    img => resolve(img), 
+                    err => reject(new Error(`Failed to load image: ${path} - ${err}`))
+                );
+            } catch (error) {
+                reject(new Error(`Error loading image: ${path} - ${error.message}`));
+            }
         });
     }
 
