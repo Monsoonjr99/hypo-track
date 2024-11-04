@@ -76,7 +76,7 @@ ul li {
 
 	/* WIDTH + 225 in main.js */
 	#ui-container {
-		display: inline-flex;
+		flex-flow: row;
 		max-width: 800px;
 	}
 
