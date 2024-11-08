@@ -478,51 +478,60 @@ var HypoTrack = (function () {
     // Mouse UI //
 
     _p5.mouseWheel = function (evt) {
-        let delta = evt.delta;
-        if (mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT - WIDTH / 2) && mouseY < HEIGHT && loadedMapImg) {
-            let ow = mapViewWidth();
-            let oh = mapViewHeight();
-            zoomAmt -= delta / 125;
-            zoomAmt = constrain(zoomAmt, 0, 15);
-            let nw = mapViewWidth();
-            let nh = mapViewHeight();
-            let dw = ow - nw;
-            let dh = oh - nh;
-            let viewerW = WIDTH;
-            let viewerH = WIDTH / 2;
-            let mx = mouseX;
-            let my = mouseY - (HEIGHT - viewerH);
-            panLocation.long += dw * mx / viewerW;
-            panLocation.lat -= dh * my / viewerH;
-            if (panLocation.long < -180)
-                panLocation.long = 180 - (180 - panLocation.long) % 360;
-            if (panLocation.long >= 180)
-                panLocation.long = (panLocation.long + 180) % 360 - 180;
-            if (panLocation.lat > 90)
-                panLocation.lat = 90;
-            if (panLocation.lat - nh < -90)
-                panLocation.lat = -90 + nh;
+        if (!isValidMousePosition() || !loadedMapImg) return;
 
-            // updateMapBuffer();
-            return false;
-        }
+        const zoomSensitivity = 1 / 125;
+        const viewerW = WIDTH;
+        const viewerH = WIDTH / 2;
+        const mouseRelativeY = mouseY - (HEIGHT - viewerH);
+
+        // calc for zooming
+        const oldViewW = mapViewWidth();
+        const oldViewH = mapViewHeight();
+
+        zoomAmt = constrain(zoomAmt - evt.delta * zoomSensitivity, 0, 15);
+
+        const newViewW = mapViewWidth();
+        const newViewH = mapViewHeight();
+
+        // adjust pan for zoom - will keep the mouse position constant
+        const viewChange = {
+            w: oldViewW - newViewW,
+            h: oldViewH - newViewH
+        };
+
+        panLocation.long += viewChange.w * mouseX / viewerW;
+        panLocation.lat -= viewChange.h * mouseRelativeY / viewerH;
+
+        // snap to bounds
+        panLocation.long = normalizeLongitude(panLocation.long);
+        panLocation.lat = constrainLatitude(panLocation.lat, newViewH);
+
+        return false;
     };
 
     _p5.mousePressed = function () {
-        if (mouseButton === LEFT && mouseX > 0 && mouseX < WIDTH && mouseY > (HEIGHT - WIDTH / 2) && mouseY < HEIGHT && loadedMapImg) {
-            beginClickX = mouseX;
-            beginClickY = mouseY;
-            if (!saveLoadReady)
-                mouseMode = 0;
-            else if (deleteTrackPoints)
-                mouseMode = 3;
-            else if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot) {
-                mouseMode = 2;
-                beginPointMoveLong = selectedDot.long;
-                beginPointMoveLat = selectedDot.lat;
-            } else
-                mouseMode = 0;
+        if (mouseButton !== LEFT || !isValidMousePosition() || !loadedMapImg) return;
+
+        beginClickX = mouseX;
+        beginClickY = mouseY;
+
+        if (!saveLoadReady) {
+            mouseMode = 0;
+            return;
         }
+        if (deleteTrackPoints) {
+            mouseMode = 3;
+            return;
+        }
+        if (hoverTrack === selectedTrack && hoverDot && hoverDot === selectedDot) {
+            mouseMode = 2;
+            beginPointMoveLong = selectedDot.long;
+            beginPointMoveLat = selectedDot.lat;
+            return;
+        }
+
+        mouseMode = 0;
     };
 
     _p5.mouseReleased = function () {
@@ -657,6 +666,23 @@ var HypoTrack = (function () {
             return false;
         }
     };
+
+    function isValidMousePosition() {
+        return mouseX > 0 &&
+            mouseX < WIDTH &&
+            mouseY > (HEIGHT - WIDTH / 2) &&
+            mouseY < HEIGHT;
+    }
+
+    function normalizeLongitude(long) {
+        if (long < -180) return 180 - (180 - long) % 360;
+        if (long >= 180) return (long + 180) % 360 - 180;
+        return long;
+    }
+
+    function constrainLatitude(lat, viewHeight) {
+        return Math.min(90, Math.max(-90 + viewHeight, lat));
+    }
 
     function zoomMult() {
         return pow(1.25, zoomAmt);
