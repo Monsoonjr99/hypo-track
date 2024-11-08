@@ -64,7 +64,7 @@ ul li {
 
 #ui-container {
 	display: flex;
-    flex-flow: column;
+	flex-flow: column;
 	background-color: #FF69B4;
 	border: .15rem solid #000080;
 	padding: 1rem;
