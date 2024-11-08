@@ -292,52 +292,46 @@ var HypoTrack = (function () {
 
     let Database = (() => {
         let db = new Dexie(IDB_KEY);
-
-        db.version(1).stores({
-            saves: ''
-        });
+        db.version(1).stores({ saves: '' });
 
         let lastSave = 0;
-        const SAVE_DELAY = 2000; // so we save every 2 seconds
+        const SAVE_DELAY = 2000;
+
+        const withLock = async (operation) => {
+            if (!saveLoadReady) return;
+            saveLoadReady = false;
+            try {
+                await operation();
+            } catch (error) {
+                console.error(`Jinkies. An error occurred: ${error.message}`);
+                throw error;
+            } finally {
+                saveLoadReady = true;
+                refreshGUI();
+            }
+        };
+
+        const getKey = () => saveName || 'Autosave';
 
         async function save() {
             const now = performance.now();
-            if (now - lastSave < SAVE_DELAY)
-                return;
+            if (now - lastSave < SAVE_DELAY) return;
             lastSave = now;
 
-            if (saveLoadReady) {
-                saveLoadReady = false;
-                try {
-                    let key = saveName || 'Autosave';
-                    await db.saves.put(tracks, key);
-                } catch (error) {
-                    console.error("Error saving to database:", error);
-                } finally {
-                    saveLoadReady = true;
-                    refreshGUI();
-                }
-            }
+            await withLock(async () => {
+                await db.saves.put(tracks, getKey());
+            });
         }
 
         async function load() {
-            if (saveLoadReady) {
-                saveLoadReady = false;
-                try {
-                    let key = saveName || 'Autosave';
-                    tracks = await db.saves.get(key) || [];
-                    for (let track of tracks) {
-                        for (let i = 0; i < track.length; i++) {
-                            track[i] = Object.assign(Object.create(TrackPoint.prototype), track[i]);
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error loading from database:", error);
-                } finally {
-                    saveLoadReady = true;
-                    refreshGUI();
-                }
-            }
+            await withLock(async () => {
+                tracks = await db.saves.get(getKey()) || [];
+                tracks.forEach(track => {
+                    track.forEach((point, i) => {
+                        track[i] = Object.assign(Object.create(TrackPoint.prototype), point);
+                    });
+                });
+            });
         }
 
         async function list() {
@@ -345,8 +339,9 @@ var HypoTrack = (function () {
         }
 
         async function delete_() {
-            let key = saveName || 'Autosave';
-            await db.saves.delete(key);
+            await withLock(async () => {
+                await db.saves.delete(getKey());
+            });
         }
 
         return { save, load, list, delete: delete_ };
@@ -695,8 +690,8 @@ var HypoTrack = (function () {
     function loadImg(path) {
         return new Promise((resolve, reject) => {
             try {
-                loadImage(path, 
-                    img => resolve(img), 
+                loadImage(path,
+                    img => resolve(img),
                     err => reject(new Error(`Failed to load image: ${path} - ${err}`))
                 );
             } catch (error) {
