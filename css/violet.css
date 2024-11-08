@@ -1,0 +1,31 @@
+/* Violet theme */
+/* original theme from astervius @ https://github.com/astervius/astervius-hypo-track */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
+body[data-theme="violet"] {
+    background: #480074;
+    background: linear-gradient(#480074, #1d004d);
+    color: #fff;
+    font-family: "Lexend", "Arial", sans-serif;
+}
+
+body[data-theme="violet"] #version {
+    background: #4b0079;
+    border: .15rem solid #daB5ff;
+    border-radius: .75rem 0 0 0;
+    color: #fff;
+}
+
+body[data-theme="violet"] #ui-container {
+    background: #270079;
+    border-radius: 0 0 0 .75rem;
+}
+
+body[data-theme="violet"] #ui-container div {
+    background: #4B0079;
+}
+
+body[data-theme="violet"] #ui-container,
+body[data-theme="violet"] #ui-container div {
+    border-color: #dab5ff;
+}
