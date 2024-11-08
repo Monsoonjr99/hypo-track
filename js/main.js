@@ -535,39 +535,51 @@ var HypoTrack = (function () {
     };
 
     _p5.mouseReleased = function () {
-        if (mouseButton === LEFT && beginClickX && beginClickY) {
-            if (mouseMode === 0) {
-                // if(keyIsDown(CONTROL))
-                //     selectedTrack = undefined;
-                if (hoverTrack) {
-                    selectedTrack = hoverTrack;
-                    selectedDot = hoverDot;
-                } else if (saveLoadReady) {
-                    let insertIndex = 0;
-                    if (!selectedTrack) {
-                        selectedTrack = [];
-                        tracks.push(selectedTrack);
-                    } else {
-                        insertIndex = selectedTrack.indexOf(selectedDot) + 1;
-                    }
-                    selectedDot = new TrackPoint(mouseLong(), mouseLat(), categoryToPlace, typeToPlace);
-                    selectedTrack.splice(insertIndex, 0, selectedDot);
-                    History.record(History.ActionTypes.addPoint, {
-                        trackIndex: tracks.indexOf(selectedTrack),
-                        pointIndex: insertIndex,
-                        long: selectedDot.long,
-                        lat: selectedDot.lat,
-                        cat: selectedDot.cat,
-                        type: selectedDot.type,
-                        newTrack: selectedTrack.length === 1
-                    });
-                    if (autosave)
-                        Database.save();
-                }
-            } else if (mouseMode === 2) {
+        if (mouseButton !== LEFT || !beginClickX || !beginClickY) return;
+
+        const handleAddPoint = () => {
+            if (!hoverTrack && !saveLoadReady) return;
+
+            if (hoverTrack) {
+                selectedTrack = hoverTrack;
+                selectedDot = hoverDot;
+                return;
+            }
+
+            let insertIndex = 0;
+            if (!selectedTrack) {
+                selectedTrack = [];
+                tracks.push(selectedTrack);
+            } else {
+                insertIndex = selectedTrack.indexOf(selectedDot) + 1;
+            }
+
+            try {
+                selectedDot = new TrackPoint(mouseLong(), mouseLat(), categoryToPlace, typeToPlace);
+                selectedTrack.splice(insertIndex, 0, selectedDot);
+
+                History.record(History.ActionTypes.addPoint, {
+                    trackIndex: tracks.indexOf(selectedTrack),
+                    pointIndex: insertIndex,
+                    long: selectedDot.long,
+                    lat: selectedDot.lat,
+                    cat: selectedDot.cat,
+                    type: selectedDot.type,
+                    newTrack: selectedTrack.length === 1
+                });
+
+                if (autosave) Database.save();
+            } catch (err) {
+                console.error('Error adding track point:', err);
+            }
+        };
+
+        const handleMovePoint = () => {
+            try {
                 selectedDot.long = mouseLong();
                 selectedDot.lat = mouseLat();
                 let trackIndex = tracks.indexOf(selectedTrack);
+
                 History.record(History.ActionTypes.movePoint, {
                     trackIndex,
                     pointIndex: tracks[trackIndex].indexOf(selectedDot),
@@ -576,95 +588,117 @@ var HypoTrack = (function () {
                     long1: selectedDot.long,
                     lat1: selectedDot.lat
                 });
-                beginPointMoveLong = beginPointMoveLat = undefined;
-                if (autosave)
-                    Database.save();
-            } else if (mouseMode === 3) {
-                for (let i = tracks.length - 1, done = false; i >= 0 && !done; i--) {
-                    for (let j = tracks[i].length - 1; j >= 0 && !done; j--) {
-                        let d = tracks[i][j];
-                        let c = longLatToScreenCoords(d);
-                        if (c.inBounds && sqrt(sq(c.x - mouseX) + sq(c.y - mouseY)) < pow(1.25, zoomAmt)) {
-                            let trackDeleted = false;
-                            tracks[i].splice(j, 1);
-                            if (d === selectedDot && tracks[i].length > 0)
-                                selectedDot = tracks[i][tracks[i].length - 1];
-                            if (tracks[i].length === 0) {
-                                if (selectedTrack === tracks[i])
-                                    deselectTrack();
-                                tracks.splice(i, 1);
-                                trackDeleted = true;
-                            }
-                            else
-                                selectedTrack = tracks[i];
-                            History.record(History.ActionTypes.deletePoint, {
-                                trackIndex: i,
-                                pointIndex: j,
-                                long: d.long,
-                                lat: d.lat,
-                                cat: d.cat,
-                                type: d.type,
-                                trackDeleted
-                            });
-                            done = true;
-                            if (autosave) {
-                                if (tracks.length === 0)
-                                    Database.delete();
-                                else
-                                    Database.save();
-                            }
+
+                if (autosave) Database.save();
+            } catch (err) {
+                console.error('Error moving track point:', err);
+            }
+            beginPointMoveLong = beginPointMoveLat = undefined;
+        };
+
+        const handleDeletePoint = () => {
+            for (let i = tracks.length - 1; i >= 0; i--) {
+                const track = tracks[i];
+                for (let j = track.length - 1; j >= 0; j--) {
+                    const point = track[j];
+                    const coords = longLatToScreenCoords(point);
+
+                    if (!coords.inBounds ||
+                        sqrt(sq(coords.x - mouseX) + sq(coords.y - mouseY)) >= pow(1.25, zoomAmt)) {
+                        continue;
+                    }
+
+                    try {
+                        const trackDeleted = handlePointDeletion(i, j, point);
+                        if (autosave) {
+                            tracks.length === 0 ? Database.delete() : Database.save();
                         }
+                        return;
+                    } catch (err) {
+                        console.error('Error deleting track point:', err);
+                        return;
                     }
                 }
             }
-            refreshGUI();
-            beginClickX = undefined;
-            beginClickY = undefined;
-            beginPanX = undefined;
-            beginPanY = undefined;
+        };
+
+        const handlePointDeletion = (trackIndex, pointIndex, point) => {
+            let trackDeleted = false;
+            const track = tracks[trackIndex];
+
+            track.splice(pointIndex, 1);
+
+            if (point === selectedDot && track.length > 0) {
+                selectedDot = track[track.length - 1];
+            }
+
+            if (track.length === 0) {
+                if (selectedTrack === track) deselectTrack();
+                tracks.splice(trackIndex, 1);
+                trackDeleted = true;
+            } else {
+                selectedTrack = track;
+            }
+
+            History.record(History.ActionTypes.deletePoint, {
+                trackIndex,
+                pointIndex,
+                long: point.long,
+                lat: point.lat,
+                cat: point.cat,
+                type: point.type,
+                trackDeleted
+            });
+
+            return trackDeleted;
+        };
+
+        const handlers = {
+            0: handleAddPoint,
+            2: handleMovePoint,
+            3: handleDeletePoint
+        };
+
+        if (handlers[mouseMode]) {
+            handlers[mouseMode]();
         }
+
+        refreshGUI();
+        beginClickX = beginClickY = beginPanX = beginPanY = undefined;
     };
 
     let lastMouseDragged = 0;
     const MOUSE_DRAG_DELAY = 16; // so around ~60 fps
 
     _p5.mouseDragged = function () {
+        if (!isValidMousePosition() || mouseButton !== LEFT || !beginClickX || !beginClickY) return false;
+
         const now = performance.now();
-        if (now - lastMouseDragged < MOUSE_DRAG_DELAY)
-            return;
+        if (now - lastMouseDragged < MOUSE_DRAG_DELAY) return false;
         lastMouseDragged = now;
 
-        if (mouseButton === LEFT && beginClickX && beginClickY) {
-            if (mouseMode === 2 && selectedDot) {
-                selectedDot.long = mouseLong();
-                selectedDot.lat = mouseLat();
-            } else if (mouseMode === 1 || Math.hypot(mouseX - beginClickX, mouseY - beginClickY) >= 20) {
-                mouseMode = 1;
-                let mvw = mapViewWidth();
-                let mvh = mapViewHeight();
-                let viewerW = WIDTH;
-                let viewerH = WIDTH / 2;
-                if (beginPanX === undefined)
-                    beginPanX = panLocation.long;
-                if (beginPanY === undefined)
-                    beginPanY = panLocation.lat;
-                let dx = mouseX - beginClickX;
-                let dy = mouseY - beginClickY;
-                panLocation.long = beginPanX - mvw * dx / viewerW;
-                panLocation.lat = beginPanY + mvh * dy / viewerH;
-                if (panLocation.long < -180)
-                    panLocation.long = 180 - (180 - panLocation.long) % 360;
-                if (panLocation.long >= 180)
-                    panLocation.long = (panLocation.long + 180) % 360 - 180;
-                if (panLocation.lat > 90)
-                    panLocation.lat = 90;
-                if (panLocation.lat - mvh < -90)
-                    panLocation.lat = -90 + mvh;
-
-                // updateMapBuffer();
-            }
+        if (mouseMode === 2 && selectedDot) {
+            selectedDot.long = mouseLong();
+            selectedDot.lat = mouseLat();
             return false;
         }
+
+        const dragDistance = Math.hypot(mouseX - beginClickX, mouseY - beginClickY);
+        if (mouseMode === 1 || dragDistance >= 20) {
+            mouseMode = 1;
+
+            if (beginPanX === undefined) beginPanX = panLocation.long;
+            if (beginPanY === undefined) beginPanY = panLocation.lat;
+
+            const viewerH = WIDTH / 2;
+            const [mvw, mvh] = [mapViewWidth(), mapViewHeight()];
+            const [dx, dy] = [mouseX - beginClickX, mouseY - beginClickY];
+
+            panLocation.long = normalizeLongitude(beginPanX - mvw * dx / WIDTH);
+            panLocation.lat = constrainLatitude(beginPanY + mvh * dy / viewerH, mvh);
+        }
+
+        return false;
     };
 
     function isValidMousePosition() {
@@ -684,33 +718,59 @@ var HypoTrack = (function () {
         return Math.min(90, Math.max(-90 + viewHeight, lat));
     }
 
+    // these seem to be used frequently
+    const ZOOM_BASE = 1.25;
+    const VIEW_HEIGHT_RATIO = 0.5; // WIDTH/2
+
     function zoomMult() {
-        return pow(1.25, zoomAmt);
+        return pow(ZOOM_BASE, zoomAmt);
     }
 
+    // this is also used frequently, so memoizing it
+    const memoizedZoomMult = (() => {
+        let lastZoomAmt = null;
+        let lastResult = null;
+        return () => {
+            if (lastZoomAmt !== zoomAmt) {
+                lastZoomAmt = zoomAmt;
+                lastResult = pow(ZOOM_BASE, zoomAmt);
+            }
+            return lastResult;
+        };
+    })();
+
     function mapViewWidth() {
-        return 360 / zoomMult();
+        return 360 / memoizedZoomMult();
     }
 
     function mapViewHeight() {
-        return 180 / zoomMult();
+        return 180 / memoizedZoomMult();
     }
 
     function mouseLong() {
-        return panLocation.long + mouseX / WIDTH * mapViewWidth();
+        return panLocation.long + (mouseX * mapViewWidth()) / WIDTH;
     }
 
     function mouseLat() {
-        return panLocation.lat - (mouseY - (HEIGHT - WIDTH / 2)) / (WIDTH / 2) * mapViewHeight();
+        const relativeY = mouseY - (HEIGHT - WIDTH * VIEW_HEIGHT_RATIO);
+        return panLocation.lat - (relativeY * mapViewHeight()) / (WIDTH * VIEW_HEIGHT_RATIO);
     }
 
     function longLatToScreenCoords(long, lat) {
-        if (long instanceof TrackPoint)
-            ({ long, lat } = long);
-        let x = ((long - panLocation.long + 360) % 360) / mapViewWidth() * WIDTH;
-        let y = (panLocation.lat - lat) / mapViewHeight() * WIDTH / 2 + HEIGHT - WIDTH / 2;
-        let inBounds = x >= 0 && x < WIDTH && y >= (HEIGHT - WIDTH / 2) && y < HEIGHT;
-        return { x, y, inBounds };
+        if (long instanceof TrackPoint) ({ long, lat } = long);
+
+        const viewWidth = mapViewWidth();
+        const viewHeight = mapViewHeight();
+        const topBound = HEIGHT - WIDTH * VIEW_HEIGHT_RATIO;
+
+        const x = ((long - panLocation.long + 360) % 360) * WIDTH / viewWidth;
+        const y = (panLocation.lat - lat) * (WIDTH * VIEW_HEIGHT_RATIO) / viewHeight + topBound;
+
+        return {
+            x,
+            y,
+            inBounds: x >= 0 && x < WIDTH && y >= topBound && y < HEIGHT
+        };
     }
 
     function loadImg(path) {
