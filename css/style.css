@@ -74,14 +74,69 @@ ul li {
 
 @media (max-width: 1225px) {
 
-	/* WIDTH + 225 in main.js */
+	/* Enhanced layout for medium screens */
 	#ui-container {
-		flex-flow: row;
-		max-width: 800px;
+		flex-flow: row wrap;
+		max-width: 90%;
+		padding: 1rem;
+	}
+
+	#undo-redo {
+		flex-direction: row;
+	}
+
+	#undo-redo .btn {
+		margin: 0 .5rem;
+	}
+
+	body {
+		font-size: 16px;
+	}
+
+	#ui-container div {
+		padding: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	#theme-selector-container {
+		padding: 1rem;
+	}
+
+	#theme-select {
+		font-size: 16px;
+	}
+}
+
+@media (max-width: 768px) {
+	#ui-container {
+		flex-flow: column nowrap;
+		max-width: 100%;
+		padding: 0.5rem;
 	}
 
 	#undo-redo {
 		flex-direction: column;
+	}
+
+	#undo-redo .btn {
+		margin: 0.25rem 0;
+		width: 100%;
+	}
+
+	body {
+		font-size: 14px;
+	}
+
+	#ui-container div {
+		padding: 0.5rem;
+	}
+
+	#theme-selector-container {
+		padding: 0.5rem;
+	}
+
+	#theme-select {
+		font-size: 14px;
 	}
 }
 
