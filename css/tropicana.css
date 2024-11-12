@@ -11,3 +11,11 @@ body[data-theme="tropicana"] {
 body[data-theme="tropicana"] #ui-container {
 	background: #02ff9b;
 }
+
+body[data-theme="tropicana"] #theme-select {
+	background: #ffd902;
+}
+
+body[data-theme="tropicana"] #theme-select option {
+	background: #02ffff;
+}

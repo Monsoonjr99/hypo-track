@@ -29,3 +29,14 @@ body[data-theme="violet"] #ui-container,
 body[data-theme="violet"] #ui-container div {
     border-color: #dab5ff;
 }
+
+body[data-theme="violet"] #theme-select {
+    background: #590091;
+    border: .15rem solid #dab5ff;
+    color: #fff;
+}
+
+body[data-theme="violet"] #theme-select option {
+    background: #6f00b4;
+    color: #fff;
+}
