@@ -803,97 +803,102 @@ var HypoTrack = (function () {
         const uicontainer = document.querySelector('#ui-container');
         // uicontainer.style.left = (WIDTH + 20) + 'px';
 
-        function div(appendTo) {
-            let d = document.createElement('div');
-            appendTo.appendChild(d);
-            return d;
+        // Element creation helper
+        function createElement(type, options = {}) {
+            const element = document.createElement(type);
+            Object.assign(element, options);
+            return element;
         }
 
-        function dropdownOption(value, appendTo) {
-            let o = document.createElement('option');
-            o.value = value;
-            o.innerText = value;
-            appendTo.appendChild(o);
-            return o;
+        // Create a labeled element and append it to a fragment
+        function createLabeledElement(id, labelText, element, fragment) {
+            const label = createElement('label', { htmlFor: id, textContent: labelText });
+            fragment.append(label, element, createElement('br'));
+            return element;
         }
 
-        function dropdown(id, label, data, appendTo) {
-            let drop = document.createElement('select');
-            drop.id = id;
-            let l = document.createElement('label');
-            l.htmlFor = drop.id;
-            l.innerText = label;
-            appendTo.appendChild(l);
-            appendTo.appendChild(drop);
-            appendTo.appendChild(document.createElement('br'));
-
-            for (const key in data) {
-                if (Object.prototype.hasOwnProperty.call(data, key)) {
-                    dropdownOption(key, drop);
-                }
-            }
-
-            return drop;
+        function div() {
+            return createElement('div');
         }
 
-        function button(label, appendTo) {
-            let b = document.createElement('button');
-            b.innerText = label;
-            appendTo.appendChild(b);
-            appendTo.appendChild(document.createElement('br'));
-            return b;
+        function dropdownOption(value) {
+            return createElement('option', {
+                value: value,
+                textContent: value
+            });
         }
 
-        function checkbox(id, label, appendTo) {
-            let b = document.createElement('input');
-            b.type = 'checkbox';
-            b.id = id;
-            let l = document.createElement('label');
-            l.htmlFor = b.id;
-            l.innerText = label;
-            appendTo.appendChild(l);
-            appendTo.appendChild(b);
-            appendTo.appendChild(document.createElement('br'));
-            return b;
+        function dropdown(id, label, data, fragment) {
+            const drop = createElement('select', { id });
+
+            const options = Object.keys(data)
+                .filter(key => Object.prototype.hasOwnProperty.call(data, key))
+                .map(key => createElement('option', {
+                    value: key,
+                    textContent: key
+                }));
+
+            drop.append(...options);
+            return createLabeledElement(id, label, drop, fragment);
         }
 
-        function textbox(id, label, appendTo) {
-            let t = document.createElement('input');
-            t.type = 'text';
-            t.addEventListener('focus', () => suppresskeybinds = true);
-            t.addEventListener('blur', () => suppresskeybinds = false);
-            t.id = id;
-            let l = document.createElement('label');
-            l.htmlFor = t.id;
-            l.innerText = label;
-            appendTo.appendChild(l);
-            appendTo.appendChild(t);
-            appendTo.appendChild(document.createElement('br'));
-            return t;
+        function button(label, fragment) {
+            const btn = createElement('button', {
+                textContent: label,
+                className: 'btn'
+            });
+            fragment.append(btn, createElement('br'));
+            return btn;
         }
+
+        function checkbox(id, label, fragment) {
+            const cb = createElement('input', {
+                type: 'checkbox',
+                id: id
+            });
+            return createLabeledElement(id, label, cb, fragment);
+        }
+
+        function textbox(id, label, fragment) {
+            const input = createElement('input', {
+                type: 'text',
+                id: id
+            });
+
+            const toggleKeybinds = (value) => () => suppresskeybinds = value;
+            input.addEventListener('focus', toggleKeybinds(true));
+            input.addEventListener('blur', toggleKeybinds(false));
+
+            return createLabeledElement(id, label, input, fragment);
+        }
+
+        const mainFragment = new DocumentFragment();
 
         // Undo/Redo //
-        let undoredo = div(uicontainer);
-
-        let undoButton = button('Undo', undoredo);
-        undoButton.onclick = function () {
-            History.undo();
-            refreshGUI();
-        };
-
-        let redoButton = button('Redo', undoredo);
-        redoButton.onclick = function () {
-            History.redo();
-            refreshGUI();
-        };
+        const undoredo = div();
         undoredo.id = "undo-redo";
-        undoButton.classList.add("btn");
-        redoButton.classList.add("btn");
+        mainFragment.appendChild(undoredo);
+
+        const createHistoryButton = (text, action) => {
+            const undoFragment = new DocumentFragment();
+            const btn = button(text, undoFragment);
+            btn.classList.add("btn");
+            btn.onclick = () => {
+                action();
+                refreshGUI();
+            };
+            undoredo.appendChild(undoFragment);
+            return btn;
+        };
+
+        const undoButton = createHistoryButton('Undo', History.undo);
+        const redoButton = createHistoryButton('Redo', History.redo);
 
         // Dropdowns div //
-        let dropdowns = div(uicontainer);
+        const dropdowns = div();
+        mainFragment.appendChild(dropdowns);
 
-        let categorySelectData = {
+        const categorySelectData = {
             'Depression': 0,
             'Storm': 1,
             'Category 1': 2,
@@ -904,107 +909,104 @@ var HypoTrack = (function () {
             'Unknown': 7
         };
 
-        let typeSelectData = {
+        const typeSelectData = {
             'Tropical': 0,
             'Subtropical': 1,
             'Non-Tropical': 2
         };
 
-        let categorySelect = dropdown('category-select', 'Select Category:', categorySelectData, dropdowns);
-        categorySelect.onchange = function () {
-            categoryToPlace = categorySelectData[categorySelect.value];
-        };
+        const dropdownsFragment = new DocumentFragment();
+        const categorySelect = dropdown('category-select', 'Select Category:', categorySelectData, dropdownsFragment);
+        categorySelect.onchange = () => categoryToPlace = categorySelectData[categorySelect.value];
 
-        let typeSelect = dropdown('type-select', 'Select Type:', typeSelectData, dropdowns);
-        typeSelect.onchange = function () {
-            typeToPlace = typeSelectData[typeSelect.value];
-        };
+        const typeSelect = dropdown('type-select', 'Select Type:', typeSelectData, dropdownsFragment);
+        typeSelect.onchange = () => typeToPlace = typeSelectData[typeSelect.value];
+        dropdowns.appendChild(dropdownsFragment);
 
         // Buttons div //
-        let buttons = div(uicontainer);
+        const buttons = div();
+        const buttonsFragment = new DocumentFragment();
+        mainFragment.appendChild(buttons);
 
-        let deselectButton = button('Deselect Track', buttons);
-        deselectButton.onclick = function () {
+        const deselectButton = button('Deselect Track', buttonsFragment);
+        deselectButton.onclick = () => {
             deselectTrack();
             refreshGUI();
         };
 
-        let modifyTrackPointButton = button('Modify Track Point', buttons);
-        modifyTrackPointButton.onclick = function () {
-            if (selectedDot) {
-                const oldCat = selectedDot.cat;
-                const oldType = selectedDot.type;
-                selectedDot.cat = categorySelectData[categorySelect.value];
-                selectedDot.type = typeSelectData[typeSelect.value];
-                const trackIndex = tracks.indexOf(selectedTrack);
-                History.record(History.ActionTypes.modifyPoint, {
-                    trackIndex,
-                    pointIndex: tracks[trackIndex].indexOf(selectedDot),
-                    oldCat,
-                    oldType,
-                    newCat: selectedDot.cat,
-                    newType: selectedDot.type
-                });
-                if (autosave)
-                    Database.save();
-            }
+        const modifyTrackPointButton = button('Modify Track Point', buttonsFragment);
+        modifyTrackPointButton.onclick = () => {
+            if (!selectedDot) return;
+
+            const oldCat = selectedDot.cat;
+            const oldType = selectedDot.type;
+            selectedDot.cat = categorySelectData[categorySelect.value];
+            selectedDot.type = typeSelectData[typeSelect.value];
+
+            History.record(History.ActionTypes.modifyPoint, {
+                trackIndex: tracks.indexOf(selectedTrack),
+                pointIndex: selectedTrack.indexOf(selectedDot),
+                oldCat,
+                oldType,
+                newCat: selectedDot.cat,
+                newType: selectedDot.type
+            });
+
+            if (autosave) Database.save();
+        };
+        buttons.appendChild(buttonsFragment);
+
+        // Checkboxes
+        const checkboxFragment = new DocumentFragment();
+        const createCheckbox = (id, label, property) => {
+            const cb = checkbox(id, label, checkboxFragment);
+            cb.onclick = () => {
+                window[property] = cb.checked;
+            };
+            return cb;
         };
 
-        let singleTrackCheckbox = checkbox('single-track-checkbox', 'Single Track Mode', buttons);
-        singleTrackCheckbox.onclick = function () {
-            if (selectedTrack)
-                hideNonSelectedTracks = singleTrackCheckbox.checked;
-        };
-
-        let deletePointsCheckbox = checkbox('delete-points-checkbox', 'Delete Track Points', buttons);
-        deletePointsCheckbox.onclick = function () {
-            deleteTrackPoints = deletePointsCheckbox.checked;
-        }
-
-        let altColorCheckbox = checkbox('alt-color-checkbox', 'Use Accessible Colors', buttons);
-        altColorCheckbox.onclick = function () {
-            useAltColors = altColorCheckbox.checked;
-        };
-
-        let smallDotCheckbox = checkbox('small-dot-checkbox', 'Use Small Points (Season Summary)', buttons);
-        smallDotCheckbox.onclick = function () {
-            useSmallDots = smallDotCheckbox.checked;
-        };
-
-        let autosaveCheckbox = checkbox('autosave-checkbox', 'Autosave', buttons);
-        autosaveCheckbox.onclick = function () {
-            autosave = autosaveCheckbox.checked;
-        };
+        const singleTrackCheckbox = createCheckbox('single-track-checkbox', 'Single track mode', 'hideNonSelectedTracks');
+        const deletePointsCheckbox = createCheckbox('delete-points-checkbox', 'Delete track points', 'deleteTrackPoints');
+        const altColorCheckbox = createCheckbox('alt-color-checkbox', 'Use accessible colors', 'useAltColors');
+        const smallDotCheckbox = createCheckbox('small-dot-checkbox', 'Use small points (season summary)', 'useSmallDots');
+        const autosaveCheckbox = createCheckbox('autosave-checkbox', 'Autosave', 'autosave');
+        buttons.appendChild(checkboxFragment);
 
         // Save/Load UI //
+        const saveloadui = div();
+        const saveloadFragment = new DocumentFragment();
+        mainFragment.appendChild(saveloadui);
 
-        let saveloadui = div(uicontainer);
+        const saveButton = button('Save', saveloadFragment);
+        const saveNameTextbox = textbox('save-name-textbox', 'Season save name:', saveloadFragment);
+        const loadDropdown = dropdown('load-season-dropdown', 'Load season', {}, saveloadFragment);
+        const newSeasonButton = button('New season', saveloadFragment);
+        newSeasonButton.style.marginTop = '1rem';
+        saveloadui.appendChild(saveloadFragment);
 
-        let saveButton = button('Save', saveloadui);
-        let saveNameTextbox = textbox('save-name-textbox', 'Season Save Name:', saveloadui);
-        let loadDropdown = dropdown('load-season-dropdown', 'Load Season', {}, saveloadui);
-        let newSeasonButton = button('New Season', saveloadui);
-
-        async function refreshLoadDropdown() {
-            let saveList = await Database.list();
-            loadDropdown.replaceChildren();
-            for (let item of saveList)
-                dropdownOption(item, loadDropdown);
+        const refreshLoadDropdown = async () => {
+            const saveList = await Database.list();
+            const dropdownFragment = new DocumentFragment();
+            saveList.forEach(item => dropdownFragment.appendChild(dropdownOption(item)));
+            loadDropdown.replaceChildren(dropdownFragment);
             loadDropdown.value = '';
-        }
+        };
 
         saveNameTextbox.maxLength = 32;
-        saveButton.onclick = function () {
-            let validityCheck = /^[a-zA-Z0-9 _\-]{4,32}$/g; // must equal a 4-32 character string of lower-case letters, upper-case letters, digits, spaces, underscores, and hyphens
-            if (validityCheck.test(saveNameTextbox.value)) {
+        const SAVE_NAME_REGEX = /^[a-zA-Z0-9 _\-]{4,32}$/;
+
+        saveButton.onclick = () => {
+            if (SAVE_NAME_REGEX.test(saveNameTextbox.value)) {
                 saveName = saveNameTextbox.value;
                 Database.save();
                 refreshGUI();
-            } else
+            } else {
                 alert('Save names must be at least 4 characters long and only contain letters, numbers, spaces, underscores, or hyphens');
+            }
         };
 
-        loadDropdown.onchange = function () {
+        loadDropdown.onchange = () => {
             if (loadDropdown.value) {
                 saveName = loadDropdown.value;
                 Database.load();
@@ -1014,25 +1016,20 @@ var HypoTrack = (function () {
             }
         };
 
-        newSeasonButton.style.marginTop = '1rem';
-        newSeasonButton.onclick = function () {
+        newSeasonButton.onclick = () => {
             tracks = [];
             saveName = undefined;
             History.reset();
             refreshGUI();
         };
 
-        refreshGUI = function () {
+        refreshGUI = () => {
             undoButton.disabled = !History.canUndo();
             redoButton.disabled = !History.canRedo();
-            for (let k in categorySelectData) {
-                if (categorySelectData[k] === categoryToPlace)
-                    categorySelect.value = k;
-            }
-            for (let k in typeSelectData) {
-                if (typeSelectData[k] === typeToPlace)
-                    typeSelect.value = k;
-            }
+
+            categorySelect.value = Object.keys(categorySelectData).find(k => categorySelectData[k] === categoryToPlace);
+            typeSelect.value = Object.keys(typeSelectData).find(k => typeSelectData[k] === typeToPlace);
+
             singleTrackCheckbox.checked = hideNonSelectedTracks;
             singleTrackCheckbox.disabled = deselectButton.disabled = !selectedTrack;
             deletePointsCheckbox.checked = deleteTrackPoints;
@@ -1040,14 +1037,14 @@ var HypoTrack = (function () {
             altColorCheckbox.checked = useAltColors;
             smallDotCheckbox.checked = useSmallDots;
             autosaveCheckbox.checked = autosave;
+
             saveButton.disabled = loadDropdown.disabled = newSeasonButton.disabled = !saveLoadReady;
-            if (saveName)
-                saveNameTextbox.value = saveName;
-            else
-                saveNameTextbox.value = '';
+            saveNameTextbox.value = saveName || '';
+
             refreshLoadDropdown();
         };
 
+        uicontainer.appendChild(mainFragment);
         refreshGUI();
     };
 
