@@ -240,7 +240,7 @@ var HypoTrack = (function () {
 
     function /* updateMapBuffer */drawMap() {
         // mapBuffer.clear();
-
+        
         const topBound = HEIGHT - WIDTH / 2;
         const mvw = mapViewWidth();
         const mvh = mapViewHeight();
@@ -249,42 +249,60 @@ var HypoTrack = (function () {
         const north = panLocation.lat;
         const south = north - mvh;
 
-        let drawSection = (img, mw, me, mn, ms, qw, qe, qn, qs) => {
-            let { width, height } = img;
-            let sx = map(qw, mw, me, 0, width);
-            let sy = map(qn, mn, ms, 0, height);
-            let sw = map(qe, qw, me, 0, width - sx);
-            let sh = map(qs, qn, ms, 0, height - sy);
-            let dx = map(qw, west, west + mvw, 0, WIDTH);
-            let dy = map(qn, north, south, topBound, HEIGHT);
-            let dw = map(qe, qw, west + mvw, 0, WIDTH - dx);
-            let dh = map(qs, qn, south, 0, HEIGHT - dy);
-            /* mapBuffer. */image(img, dx, dy, dw, dh, sx, sy, sw, sh);
+        const coords = {
+            sx: 0, sy: 0, sw: 0, sh: 0,
+            dx: 0, dy: 0, dw: 0, dh: 0
         };
 
+        const drawSection = (img, mw, me, mn, ms, qw, qe, qn, qs) => {
+            const { width, height } = img;
+
+            coords.sx = width * (qw - mw) / (me - mw);
+            coords.sy = height * (qn - mn) / (ms - mn);
+            coords.sw = width * (qe - qw) / (me - mw);
+            coords.sh = height * (qs - qn) / (ms - mn);
+
+            coords.dx = WIDTH * (qw - west) / mvw;
+            coords.dy = (HEIGHT - topBound) * (qn - north) / (south - north) + topBound;
+            coords.dw = WIDTH * (qe - qw) / mvw;
+            coords.dh = (HEIGHT - topBound) * (qs - qn) / (south - north);
+
+            image(img,
+                coords.dx, coords.dy, coords.dw, coords.dh,
+                coords.sx, coords.sy, coords.sw, coords.sh
+            );
+        };
+
+        const northGtZero = north > 0;
+        const southLtZero = south < 0;
+        const minNorthZero = min(north, 0);
+        const maxSouthZero = max(south, 0);
+
+        // Draw sections based on view bounds
         if (west < 0) {
-            if (north > 0)
-                drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), min(north, 0), south);
+            if (northGtZero)
+                drawSection(mapImgs.nw, -180, 0, 90, 0, west, min(east, 0), north, maxSouthZero);
+            if (southLtZero)
+                drawSection(mapImgs.sw, -180, 0, 0, -90, west, min(east, 0), minNorthZero, south);
         }
         if (east > 0) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 0, 180, 90, 0, max(west, 0), min(east, 180), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 0, 180, 0, -90, max(west, 0), min(east, 180), min(north, 0), south);
+            const maxWestZero = max(west, 0);
+            if (northGtZero)
+                drawSection(mapImgs.ne, 0, 180, 90, 0, maxWestZero, min(east, 180), north, maxSouthZero);
+            if (southLtZero)
+                drawSection(mapImgs.se, 0, 180, 0, -90, maxWestZero, min(east, 180), minNorthZero, south);
         }
         if (east > 180) {
-            if (north > 0)
-                drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), min(north, 0), south);
+            if (northGtZero)
+                drawSection(mapImgs.nw, 180, 360, 90, 0, 180, min(east, 360), north, maxSouthZero);
+            if (southLtZero)
+                drawSection(mapImgs.sw, 180, 360, 0, -90, 180, min(east, 360), minNorthZero, south);
         }
         if (east > 360) {
-            if (north > 0)
-                drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, max(south, 0));
-            if (south < 0)
-                drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, min(north, 0), south);
+            if (northGtZero)
+                drawSection(mapImgs.ne, 360, 540, 90, 0, 360, east, north, maxSouthZero);
+            if (southLtZero)
+                drawSection(mapImgs.se, 360, 540, 0, -90, 360, east, minNorthZero, south);
         }
     }
 
