@@ -803,34 +803,42 @@ var HypoTrack = (function () {
         const uicontainer = document.querySelector('#ui-container');
         // uicontainer.style.left = (WIDTH + 20) + 'px';
 
+        const mainFragment = new DocumentFragment();
+
         // Element creation helper
-        function createElement(type, options = {}) {
-            const element = document.createElement(type);
-            Object.assign(element, options);
-            return element;
-        }
+        const createElement = (() => {
+            const elementCache = new Map();
+
+            return (type, options = {}) => {
+                let element;
+                if (!options.id && !options.textContent && elementCache.has(type)) {
+                    // clone cached elements
+                    element = elementCache.get(type).cloneNode(false);
+                } else {
+                    element = document.createElement(type);
+                    // cache basic elements
+                    if (!options.id && !options.textContent) {
+                        elementCache.set(type, element.cloneNode(false));
+                    }
+                }
+                Object.assign(element, options);
+                return element;
+            };
+        })();
 
         // Create a labeled element and append it to a fragment
         function createLabeledElement(id, labelText, element, fragment) {
             const label = createElement('label', { htmlFor: id, textContent: labelText });
-            fragment.append(label, element, createElement('br'));
+            const br = createElement('br');
+            fragment.append(label, element, br);
             return element;
         }
 
-        function div() {
-            return createElement('div');
-        }
-
-        function dropdownOption(value) {
-            return createElement('option', {
-                value: value,
-                textContent: value
-            });
-        }
+        const div = () => createElement('div');
+        const dropdownOption = value => createElement('option', { value, textContent: value });
 
         function dropdown(id, label, data, fragment) {
-            const drop = createElement('select', { id });
-
+            const select = createElement('select', { id });
             const options = Object.keys(data)
                 .filter(key => Object.prototype.hasOwnProperty.call(data, key))
                 .map(key => createElement('option', {
@@ -838,8 +846,8 @@ var HypoTrack = (function () {
                     textContent: key
                 }));
 
-            drop.append(...options);
-            return createLabeledElement(id, label, drop, fragment);
+            select.append(...options);
+            return createLabeledElement(id, label, select, fragment);
         }
 
         function button(label, fragment) {
@@ -854,7 +862,7 @@ var HypoTrack = (function () {
         function checkbox(id, label, fragment) {
             const cb = createElement('input', {
                 type: 'checkbox',
-                id: id
+                id
             });
             return createLabeledElement(id, label, cb, fragment);
         }
@@ -862,17 +870,14 @@ var HypoTrack = (function () {
         function textbox(id, label, fragment) {
             const input = createElement('input', {
                 type: 'text',
-                id: id
+                id
             });
 
-            const toggleKeybinds = (value) => () => suppresskeybinds = value;
-            input.addEventListener('focus', toggleKeybinds(true));
-            input.addEventListener('blur', toggleKeybinds(false));
+            input.addEventListener('focus', () => suppresskeybinds = true, { passive: true });
+            input.addEventListener('blur', () => suppresskeybinds = false, { passive: true });
 
             return createLabeledElement(id, label, input, fragment);
         }
-
-        const mainFragment = new DocumentFragment();
 
         // Undo/Redo //
         const undoredo = div();
