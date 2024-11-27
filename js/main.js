@@ -921,10 +921,10 @@ var HypoTrack = (function () {
         };
 
         const dropdownsFragment = new DocumentFragment();
-        const categorySelect = dropdown('category-select', 'Select Category:', categorySelectData, dropdownsFragment);
+        const categorySelect = dropdown('category-select', 'Select category:', categorySelectData, dropdownsFragment);
         categorySelect.onchange = () => categoryToPlace = categorySelectData[categorySelect.value];
 
-        const typeSelect = dropdown('type-select', 'Select Type:', typeSelectData, dropdownsFragment);
+        const typeSelect = dropdown('type-select', 'Select type:', typeSelectData, dropdownsFragment);
         typeSelect.onchange = () => typeToPlace = typeSelectData[typeSelect.value];
         dropdowns.appendChild(dropdownsFragment);
 
@@ -933,13 +933,13 @@ var HypoTrack = (function () {
         const buttonsFragment = new DocumentFragment();
         mainFragment.appendChild(buttons);
 
-        const deselectButton = button('Deselect Track', buttonsFragment);
+        const deselectButton = button('Deselect track', buttonsFragment);
         deselectButton.onclick = () => {
             deselectTrack();
             refreshGUI();
         };
 
-        const modifyTrackPointButton = button('Modify Track Point', buttonsFragment);
+        const modifyTrackPointButton = button('Modify track point', buttonsFragment);
         modifyTrackPointButton.onclick = () => {
             if (!selectedDot) return;
 
@@ -974,7 +974,7 @@ var HypoTrack = (function () {
         const singleTrackCheckbox = createCheckbox('single-track-checkbox', 'Single track mode', 'hideNonSelectedTracks');
         const deletePointsCheckbox = createCheckbox('delete-points-checkbox', 'Delete track points', 'deleteTrackPoints');
         const altColorCheckbox = createCheckbox('alt-color-checkbox', 'Use accessible colors', 'useAltColors');
-        const smallDotCheckbox = createCheckbox('small-dot-checkbox', 'Use small points (season summary)', 'useSmallDots');
+        const smallDotCheckbox = createCheckbox('small-dot-checkbox', 'Season summary mode', 'useSmallDots');
         const autosaveCheckbox = createCheckbox('autosave-checkbox', 'Autosave', 'autosave');
         buttons.appendChild(checkboxFragment);
 
