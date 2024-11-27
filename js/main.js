@@ -240,7 +240,7 @@ var HypoTrack = (function () {
 
     function /* updateMapBuffer */drawMap() {
         // mapBuffer.clear();
-        
+
         const topBound = HEIGHT - WIDTH / 2;
         const mvw = mapViewWidth();
         const mvh = mapViewHeight();
