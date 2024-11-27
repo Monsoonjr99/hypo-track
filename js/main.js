@@ -232,26 +232,9 @@ var HypoTrack = (function () {
                 }
             }
         } else {
-            background(245);
-            
-            // loading text
             textSize(48);
             textAlign(CENTER, CENTER);
-            text('Loading map...', WIDTH / 2, HEIGHT / 2 - 40);
-
-            // spinenr animation
-            push();
-            translate(WIDTH / 2, HEIGHT / 2 + 40);
-            rotate(frameCount * 0.1);
-            noFill();
-            strokeWeight(4);
-            stroke(100, 150, 255);
-            arc(0, 0, 50, 50, 0, PI + HALF_PI);
-            pop();
-
-            // loading progress dots
-            textSize(24);
-            text('.'.repeat(1 + frameCount % 3), WIDTH / 2, HEIGHT / 2 + 80);
+            text('Loading...', WIDTH / 2, HEIGHT / 2);
         }
     };
 
