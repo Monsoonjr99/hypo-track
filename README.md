@@ -1,1 +1,1 @@
-Fork of [Monsoonjr99](https://github.com/Monsoonjr99/)'s [project of same name](https://github.com/Monsoonjr99/hypo-track/). Favicon taken from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ponkan_trash_full.png).
+Fork of [Monsoonjr99](https://github.com/Monsoonjr99/)'s [project of same name](https://github.com/Monsoonjr99/hypo-track/).
