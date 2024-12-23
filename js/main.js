@@ -76,19 +76,45 @@ var HypoTrack = (function () {
     };
 
     async function loadImages() {
-        const paths = [
-            'resources/map_hi-res_NW.webp',
-            'resources/map_hi-res_NE.webp',
-            'resources/map_hi-res_SW.webp',
-            'resources/map_hi-res_SE.webp'
+        const IMAGE_PATHS = [
+            '../resources/map_hi-res_NW.webp',
+            '../resources/map_hi-res_NE.webp',
+            '../resources/map_hi-res_SW.webp',
+            '../resources/map_hi-res_SE.webp'
         ];
+
+        const createP5Image = (arrayBuffer) =>
+            new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(new Blob([arrayBuffer]));
+                loadImage(url,
+                    img => {
+                        URL.revokeObjectURL(url);
+                        resolve(img);
+                    },
+                    err => reject(new Error(`Image load failed: ${err}`))
+                );
+            });
+
         try {
-            const promises = paths.map(path => loadImg(path));
-            const imgs = await Promise.all(promises);
-            [mapImgs.nw, mapImgs.ne, mapImgs.sw, mapImgs.se] = imgs;
+            const worker = new Worker('js/worker.js');
+
+            const arrayBuffers = await new Promise((resolve, reject) => {
+                worker.onmessage = e => e.data.error ? reject(e.data.error) : resolve(e.data.imgs);
+                worker.onerror = e => reject(e);
+                worker.postMessage({ paths: IMAGE_PATHS });
+            });
+
+            const [nw, ne, sw, se] = await Promise.all(arrayBuffers.map(createP5Image));
+            Object.assign(mapImgs, { nw, ne, sw, se });
+
+            return Promise.resolve();
+
         } catch (error) {
-            console.error("Error loading images:", error);
+            console.error('Image loading failed:', error);
             mapImgs = {};
+            throw error;
+        } finally {
+            worker?.terminate();
         }
     }
 
