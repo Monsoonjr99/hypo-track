@@ -75,6 +75,7 @@ var HypoTrack = (function () {
         //});
     };
 
+    let worker;
     async function loadImages() {
         const IMAGE_PATHS = [
             '../resources/map_hi-res_NW.webp',
