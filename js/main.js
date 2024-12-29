@@ -77,12 +77,12 @@ var HypoTrack = (function () {
 
     let worker;
     async function loadImages() {
-        const IMAGE_PATHS = [
-            '../resources/map_hi-res_NW.webp',
-            '../resources/map_hi-res_NE.webp',
-            '../resources/map_hi-res_SW.webp',
-            '../resources/map_hi-res_SE.webp'
-        ];
+        const IMAGE_PATHS = new Map([
+            ['nw', '../resources/map_hi-res_NW.webp'],
+            ['ne', '../resources/map_hi-res_NE.webp'],
+            ['sw', '../resources/map_hi-res_SW.webp'],
+            ['se', '../resources/map_hi-res_SE.webp']
+        ]);
 
         const createP5Image = (arrayBuffer) =>
             new Promise((resolve, reject) => {
@@ -102,11 +102,15 @@ var HypoTrack = (function () {
             const arrayBuffers = await new Promise((resolve, reject) => {
                 worker.onmessage = e => e.data.error ? reject(e.data.error) : resolve(e.data.imgs);
                 worker.onerror = e => reject(e);
-                worker.postMessage({ paths: IMAGE_PATHS });
+                worker.postMessage({ paths: Array.from(IMAGE_PATHS.values()) });
             });
 
-            const [nw, ne, sw, se] = await Promise.all(arrayBuffers.map(createP5Image));
-            Object.assign(mapImgs, { nw, ne, sw, se });
+            const imagePromises = Array.from(IMAGE_PATHS.keys()).map((key, index) =>
+                createP5Image(arrayBuffers[index]).then(img => [key, img])
+            );
+
+            const imageEntries = await Promise.all(imagePromises);
+            Object.assign(mapImgs, Object.fromEntries(imageEntries));
 
             return Promise.resolve();
 
@@ -817,20 +821,6 @@ var HypoTrack = (function () {
             inBounds: x >= 0 && x < WIDTH && y >= topBound && y < HEIGHT
         };
     }
-
-    function loadImg(path) {
-        return new Promise((resolve, reject) => {
-            try {
-                loadImage(path,
-                    img => resolve(img),
-                    err => reject(new Error(`Failed to load image: ${path} - ${err}`))
-                );
-            } catch (error) {
-                reject(new Error(`Error loading image: ${path} - ${error.message}`));
-            }
-        });
-    }
-
     class TrackPoint {
         constructor(long, lat, cat, type) {
             this.long = long || 0;
@@ -1092,6 +1082,22 @@ var HypoTrack = (function () {
             saveNameTextbox.value = saveName || '';
 
             refreshLoadDropdown();
+        };
+
+        const downloadBtn = document.getElementById('download-btn');
+        downloadBtn.onclick = () => {
+            const canvas = document.querySelector('#defaultCanvas0');
+
+            // create a temporary link
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.download = `hypo-track-${timestamp}.png`;
+
+            canvas.toBlob(function (blob) {
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }, 'image/png');
         };
 
         uicontainer.appendChild(mainFragment);

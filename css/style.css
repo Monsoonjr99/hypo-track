@@ -185,3 +185,21 @@ img {
 	background-color: #FFFF00;
 	color: #000080;
 }
+
+#download-btn {
+	position: fixed;
+	bottom: 40px;
+	right: 30px;
+	padding: 10px 15px;
+	font-size: 20px;
+	border: none;
+	border-radius: 5px;
+	background: #fff;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+	transition: transform 0.2s;
+}
+
+#download-btn:hover {
+	transform: scale(1.1);
+}
