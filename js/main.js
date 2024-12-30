@@ -41,7 +41,7 @@ var HypoTrack = (function () {
     let _p5 = {};
 
     _p5.setup = function () {
-        setVersion(TITLE + ' v', VERSION);
+        versionManager.setVersion(TITLE + ' v', VERSION);
         document.title = TITLE;
 
         let canvas = createCanvas(WIDTH, HEIGHT);
