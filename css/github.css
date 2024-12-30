@@ -67,3 +67,8 @@ body[data-theme="github"] input {
 body[data-theme="github"] #ui-container option {
     color: #fff;
 }
+
+body[data-theme="github"] #save-name-textbox {
+    color: white;
+    line-height: 1.5;
+}
