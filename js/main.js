@@ -1007,10 +1007,28 @@ var HypoTrack = (function () {
         };
 
         const singleTrackCheckbox = createCheckbox('single-track-checkbox', 'Single track mode', 'hideNonSelectedTracks');
+        singleTrackCheckbox.onchange = () => {
+            hideNonSelectedTracks = singleTrackCheckbox.checked;
+        };
+
         const deletePointsCheckbox = createCheckbox('delete-points-checkbox', 'Delete track points', 'deleteTrackPoints');
+        deletePointsCheckbox.onchange = () => {
+            deleteTrackPoints = deletePointsCheckbox.checked;
+        };
+
         const altColorCheckbox = createCheckbox('alt-color-checkbox', 'Use accessible colors', 'useAltColors');
+        altColorCheckbox.onchange = () => {
+            useAltColors = altColorCheckbox.checked;
+        };
+
         const smallDotCheckbox = createCheckbox('small-dot-checkbox', 'Season summary mode', 'useSmallDots');
+        smallDotCheckbox.onchange = () => {
+            useSmallDots = smallDotCheckbox.checked;
+        };
         const autosaveCheckbox = createCheckbox('autosave-checkbox', 'Autosave', 'autosave');
+        autosaveCheckbox.onchange = () => {
+            autosave = autosaveCheckbox.checked;
+        };
         buttons.appendChild(checkboxFragment);
 
         // Save/Load UI //
